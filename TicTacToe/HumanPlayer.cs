@@ -26,8 +26,8 @@ public class HumanPlayer : BasePlayer
         int chosenCard;
         while (true)
         {
-            Console.Write("Please choose one of the following cards({0}): ", String.Join(", ", RemainingCards));
-            if (int.TryParse(Console.ReadLine(), out chosenCard) && RemainingCards.Contains(chosenCard))
+            Console.Write("Please choose one of the following cards({0}): ", String.Join(", ", RemainingHoldings));
+            if (int.TryParse(Console.ReadLine(), out chosenCard) && RemainingHoldings.Contains(chosenCard))
             {
                 break;
             }

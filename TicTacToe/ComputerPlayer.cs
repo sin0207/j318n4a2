@@ -38,7 +38,7 @@ public class ComputerPlayer : HumanPlayer
 
         // pick a position and value randomly
         (int nextPositionRow, int nextPositionColumn) = availablePositions[PickIndexRandomly(availablePositions.Count)];
-        return (nextPositionRow, nextPositionColumn, RemainingCards[PickIndexRandomly(RemainingCards.Length)]);
+        return (nextPositionRow, nextPositionColumn, RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)]);
     }
 
     private int PickIndexRandomly(int length)
@@ -50,7 +50,7 @@ public class ComputerPlayer : HumanPlayer
 
     private int? FindWinningCard(int row, int col, TicTacToeBoard ticTacToeBoard)
     {
-        foreach(int number in RemainingCards)
+        foreach(int number in RemainingHoldings)
         {
             // if there's any position can let computer player win, then select it.
             if (ticTacToeBoard.CheckWin(row, col, number))

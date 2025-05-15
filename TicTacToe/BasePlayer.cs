@@ -5,12 +5,12 @@ public abstract class BasePlayer
     protected Dictionary<int, bool> usedCardMap = new Dictionary<int, bool>();
     
     public int PlayerNumber { get; protected set; }
-    public int[] RemainingCards { get; set; }
+    public int[] RemainingHoldings { get; set; }
     
     protected BasePlayer(int boardSize, int playerNumber)
     {
         PlayerNumber = playerNumber;
-        RemainingCards = InitializeCards(boardSize);
+        RemainingHoldings = InitializeCards(boardSize);
     }
     
     protected int[] InitializeCards(int totalCardNumber)
@@ -42,7 +42,7 @@ public abstract class BasePlayer
     public void MarkCardAsUsed(int number)
     {
         usedCardMap[number] = true;
-        RemainingCards = RemainingCards.Where(val => val != number).ToArray();
+        RemainingHoldings = RemainingHoldings.Where(val => val != number).ToArray();
     }
     
     public abstract bool IsHumanPlayer();

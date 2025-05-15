@@ -9,7 +9,6 @@ const int VIEW_MANU_OPERATION_OPTION = 3;
 
 TicTacToeBoard ticTacToeBoard = new TicTacToeBoard();
 BasePlayer player;
-bool isPlayerWon = false;
 
 while (!ticTacToeBoard.IsGameOver)
 {
@@ -22,11 +21,11 @@ while (!ticTacToeBoard.IsGameOver)
         switch (option)
         {
             case MAKE_MOVE_OPERATION_OPTION:
-                MakeMove(player, ticTacToeBoard, ref isPlayerWon);
+                MakeMove(player, ticTacToeBoard);
                 break;
             case SAVE_GAME_OPERATION_OPTION:
                 ticTacToeBoard.SaveGame();
-                MakeMove(player, ticTacToeBoard, ref isPlayerWon);
+                MakeMove(player, ticTacToeBoard);
                 break;
             case VIEW_MANU_OPERATION_OPTION:
                 ticTacToeBoard.DisplayHelpMenu();
@@ -35,12 +34,12 @@ while (!ticTacToeBoard.IsGameOver)
     }
     else
     {
-        MakeMove(player, ticTacToeBoard, ref isPlayerWon);
+        MakeMove(player, ticTacToeBoard);
     }
     Console.WriteLine();
 }
 
-ticTacToeBoard.HandleGameOver(isPlayerWon);
+ticTacToeBoard.HandleGameOver();
 
 int RequestUserToChooseNextOperation()
 {
@@ -65,11 +64,8 @@ int RequestUserToChooseNextOperation()
     return operationOption;
 }
 
-void MakeMove(BasePlayer player, TicTacToeBoard ticTacToeBoard, ref bool isPlayerWon)
+void MakeMove(BasePlayer player, TicTacToeBoard ticTacToeBoard)
 {
     (int row, int col, int chosenCard) = player.GetNextMove(ticTacToeBoard);
-    if (ticTacToeBoard.CheckWin(row, col, chosenCard))
-        isPlayerWon = true;
     ticTacToeBoard.Place(row, col, chosenCard);
-    player.MarkCardAsUsed(chosenCard);
 }
