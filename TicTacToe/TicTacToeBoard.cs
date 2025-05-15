@@ -151,25 +151,32 @@ public class TicTacToeBoard : GameBoard
         return result;
     }
 
-    private void UpdateCacheMaps(int row, int col, object value)
+    private void UpdateCacheMaps(int row, int col, object value, string action = "insert")
     {
-        int number = (int)value;
-        currentSumMap["row_" + row] += number;
-        currentFilledCountMap["row_" + row]++;
+        int updateValue = (int)value;
+        int filledCountUpdate = 1;
+        
+        if(action == "delete")
+        {
+            updateValue *= -1;
+            filledCountUpdate = -1;
+        }
+        currentSumMap["row_" + row] += updateValue;
+        currentFilledCountMap["row_" + row] += filledCountUpdate;
 
-        currentSumMap["col_" + col] += number;
-        currentFilledCountMap["col_" + col]++;
+        currentSumMap["col_" + col] += updateValue;
+        currentFilledCountMap["col_" + col] += filledCountUpdate;
 
         if (row == col)
         {
-            currentSumMap["diagonal_tl_to_br"] += number;
-            currentFilledCountMap["diagonal_tl_to_br"]++;
+            currentSumMap["diagonal_tl_to_br"] += updateValue;
+            currentFilledCountMap["diagonal_tl_to_br"] += filledCountUpdate;
         }
 
         if (row + col == Size + 1)
         {
-            currentSumMap["diagonal_tr_to_bl"] += number;
-            currentFilledCountMap["diagonal_tr_to_bl"]++;
+            currentSumMap["diagonal_tr_to_bl"] += updateValue;
+            currentFilledCountMap["diagonal_tr_to_bl"] += filledCountUpdate;
         }
     }
 
@@ -177,32 +184,44 @@ public class TicTacToeBoard : GameBoard
     {
         if (GetCurrentPlayer() is ICardHoldingPlayer cardHolder)
         {
-            cardHolder.MarkCardAsUsed(value);
+            // undo
+            if (value == NOT_PLACED_FLAG)
+            {
+                cardHolder.UnmarkCardAsUsed(board[row, col]);
+                UpdateCacheMaps(row, col, board[row, col], action: "delete");
+            }
+            else // make new move
+            {
+                cardHolder.MarkCardAsUsed(value);
+                UpdateCacheMaps(row, col, value);
+            }
         }
     }
 
 
     protected override void PostPlace(int row, int col, object value)
     {
-        UpdateCacheMaps(row, col, value);
+        
     }
 
-    public override bool CheckWin(int row, int col, object value)
+    public override bool CheckWin(int row, int col, object value = null)
     {
-        int? number = value as int?;
-        if ((currentSumMap["row_" + row] + number == targetNumber && currentFilledCountMap["row_" + row] + 1 == Size)
+        int number = value == null ? 0 : Convert.ToInt32(value);
+        int lineCount = value == null ? 0 : 1;
+        
+        if ((currentSumMap["row_" + row] + number == targetNumber && currentFilledCountMap["row_" + row] + lineCount == Size)
             || (currentSumMap["col_" + col] + number == targetNumber &&
-                currentFilledCountMap["col_" + col] + 1 == Size))
+                currentFilledCountMap["col_" + col] + lineCount == Size))
             return true;
 
         // point is on the top left to bottom right diagonal line
         if (row == col && currentSumMap["diagonal_tl_to_br"] + number == targetNumber &&
-            currentFilledCountMap["diagonal_tl_to_br"] + 1 == Size)
+            currentFilledCountMap["diagonal_tl_to_br"] + lineCount == Size)
             return true;
 
         // point is on the top right to bottom left diagonal line
         if (row + col == Size + 1 && currentSumMap["diagonal_tr_to_bl"] + number == targetNumber &&
-            currentFilledCountMap["diagonal_tr_to_bl"] + 1 == Size)
+            currentFilledCountMap["diagonal_tr_to_bl"] + lineCount == Size)
             return true;
 
         return false;
@@ -221,8 +240,7 @@ public class TicTacToeBoard : GameBoard
         Console.WriteLine("Actions:");
         Console.WriteLine("1. Make a Move: you can choose to make next move.");
         Console.WriteLine("2. Save current game: you can save the current game state and resume later.");
-        Console.WriteLine("\nPress any key to continue...");
-        Console.ReadLine();
+        PauseProgramByReadingKeyPress();
     }
 
     protected override void DisplayMoreInformationForHumanPlayer()

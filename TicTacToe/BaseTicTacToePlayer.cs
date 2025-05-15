@@ -37,4 +37,9 @@ public abstract class BaseTicTacToePlayer : BasePlayer, ICardHoldingPlayer
     {
         RemainingHoldings = RemainingHoldings.Where(val => !val.Equals(value)).ToArray();
     }
+
+    public void UnmarkCardAsUsed(object value)
+    {
+        RemainingHoldings = RemainingHoldings.Append(value).ToArray();
+    }
 }

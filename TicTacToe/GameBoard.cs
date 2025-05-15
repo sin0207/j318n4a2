@@ -37,7 +37,7 @@ public abstract class GameBoard
     private int movePointer = -1;
     
     public abstract void DisplayBoard();
-    public abstract bool CheckWin(int row, int col, object value);
+    public abstract bool CheckWin(int row, int col, object value = null);
     public abstract void DisplayHelpMenu();
 
     public GameBoard()
@@ -118,13 +118,12 @@ public abstract class GameBoard
         mode = loadedGame.Mode;
         currentPlayerIndex = loadedGame.CurrentPlayerIndex;
         humanPlayFirst = loadedGame.HumanPlayFirst;
-        moveHistory = loadedGame.MoveHistory;
-        movePointer = loadedGame.MovePointer;
 
         SetupGameBoard();
         InitializePlayers();
         LoadFromJaggedArray(loadedGame.Board);
         ResumePlayerHoldings(loadedGame.PlayerHoldings);
+        ResumeMoveHistory(loadedGame);
     }
     
     private void InitializePlayers()
@@ -214,9 +213,8 @@ public abstract class GameBoard
         board[row, col] = value;
         RefreshGameStatus(row, col, value);
         currentPlayerIndex = (currentPlayerIndex + 1) % PLAYER_COUNT;
-        AppendMove(row, col, value);
         
-        PostPlace(row, col, value);
+        PostPlace(row, col, board[row, col]);
     }
 
     public bool IsAvailablePosition(int row, int col)
@@ -230,7 +228,7 @@ public abstract class GameBoard
     private void RefreshGameStatus(int row, int col, object value)
     {
         remainingFilledCount--;
-        bool isPlayerWin = CheckWin(row, col, value);
+        bool isPlayerWin = CheckWin(row, col);
         if (isPlayerWin) winnerId = currentPlayerIndex;
         
         isGameOver = remainingFilledCount == 0 || isPlayerWin;
@@ -290,6 +288,15 @@ public abstract class GameBoard
         {
             player.RemainingHoldings = playerHolding[player.PlayerNumber].Select(ConvertFromJsonElement).ToArray();
         }
+    }
+
+    private void ResumeMoveHistory(GameState loadedGame)
+    {
+        List<Move> loadedHistory = loadedGame.MoveHistory;
+        loadedHistory.ForEach(m => m.Value = ConvertFromJsonElement(m.Value));
+
+        moveHistory = loadedHistory;
+        movePointer = loadedGame.MovePointer;
     }
 
     public BasePlayer GetCurrentPlayer()
@@ -371,7 +378,7 @@ public abstract class GameBoard
         DisplayBoard();
     }
 
-    private void AppendMove(int row, int col, object value)
+    public void AppendMove(int row, int col, object value)
     {
         // should clear outdated history when make a new move
         if (movePointer < moveHistory.Count - 1)
@@ -379,35 +386,53 @@ public abstract class GameBoard
             moveHistory.RemoveRange(movePointer + 1, moveHistory.Count - movePointer - 1);
         }
         
-        moveHistory.Add(new Move { Row = row, Col = col, Value = value });
+        moveHistory.Add(new Move { Row = row, Col = col, Value = value, PlayerIndex = currentPlayerIndex});
         movePointer++;
     }
 
     public void Undo()
     {
-        if (movePointer < 0)
+        if (movePointer < 1)
         {
             Console.WriteLine("Nothing to undo.");
+            PauseProgramByReadingKeyPress();
         }
         else
         {
-            var move = moveHistory[movePointer];
-            board[move.Row, move.Col] = NOT_PLACED_FLAG;
-            movePointer--;
+            int tmp = currentPlayerIndex;
+            for(int i = 0; i < 2; i++)
+            {
+                var move = moveHistory[movePointer];
+                currentPlayerIndex = move.PlayerIndex;
+                Place(move.Row, move.Col, NOT_PLACED_FLAG);
+                movePointer--;
+            }
+
+            currentPlayerIndex = tmp;
         }
     }
 
     public void Redo()
     {
-        if (movePointer + 1 >= moveHistory.Count)
+        if (movePointer + 2 >= moveHistory.Count)
         {
             Console.WriteLine("Nothing to redo.");
+            PauseProgramByReadingKeyPress();
         }
         else
         {
-            movePointer++;
-            var move = moveHistory[movePointer];
-            Place(move.Row, move.Col, move.Value);
+            for(int i = 0; i < 2; i++)
+            {
+                movePointer++;
+                var move = moveHistory[movePointer];
+                Place(move.Row, move.Col, move.Value);
+            }
         }
+    }
+
+    protected void PauseProgramByReadingKeyPress()
+    {
+        Console.WriteLine("\nPress any key to continue...");
+        Console.ReadLine();
     }
 }
