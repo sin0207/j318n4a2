@@ -13,7 +13,7 @@ public abstract class GameBoard
     protected const int RESUME_PREVIOUS_GAME_OPTION = 2;
     
     // Flags
-    protected const int NOT_PLACED_FLAG = 0;
+    protected const object NOT_PLACED_FLAG = null;
     private const int NO_WINNER_FLAG = -1;
     private int winnerId = NO_WINNER_FLAG;
     
@@ -25,7 +25,7 @@ public abstract class GameBoard
     // game board settings
     protected virtual int PLAYER_COUNT { get; }
     public int Size { get; set; }
-    protected int[,] board;
+    protected object[,] board;
     protected int mode;
     protected int currentPlayerIndex;
     protected bool humanPlayFirst;
@@ -33,8 +33,12 @@ public abstract class GameBoard
     protected virtual string GAME_RECORD_FILE_NAME { get; }
     protected virtual string GAMEBOARD_NAME { get; }
     
+    private List<Move> moveHistory = new List<Move>();
+    private int movePointer = -1;
+    
     public abstract void DisplayBoard();
-    public abstract bool CheckWin(int row, int col, int number);
+    public abstract bool CheckWin(int row, int col, object value);
+    public abstract void DisplayHelpMenu();
 
     public GameBoard()
     {
@@ -99,11 +103,11 @@ public abstract class GameBoard
     protected virtual void SetupGameBoard()
     {
         remainingFilledCount = Size * Size;
-        board = new int[Size + 1, Size + 1];
+        board = new object[Size + 1, Size + 1];
         isGameOver = false;
         currentPlayerIndex = 0;
     }
-
+    
     protected void ResumePreviousGameBoard()
     {
         string json = File.ReadAllText(GAME_RECORD_FILE_NAME);
@@ -114,10 +118,12 @@ public abstract class GameBoard
         mode = loadedGame.Mode;
         currentPlayerIndex = loadedGame.CurrentPlayerIndex;
         humanPlayFirst = loadedGame.HumanPlayFirst;
+        moveHistory = loadedGame.MoveHistory;
+        movePointer = loadedGame.MovePointer;
 
         SetupGameBoard();
-        LoadFromJaggedArray(loadedGame.Board);
         InitializePlayers();
+        LoadFromJaggedArray(loadedGame.Board);
         ResumePlayerHoldings(loadedGame.PlayerHoldings);
     }
     
@@ -198,18 +204,19 @@ public abstract class GameBoard
         }
     }
 
-    protected virtual void PrePlace(int row, int col, int number) { }
-    protected virtual void PostPlace(int row, int col, int number) { }
+    protected virtual void PrePlace(int row, int col, object number) { }
+    protected virtual void PostPlace(int row, int col, object number) { }
 
-    public void Place(int row, int col, int number)
+    public void Place(int row, int col, object value)
     {
-        PrePlace(row, col, number);
+        PrePlace(row, col, value);
         
-        board[row, col] = number;
-        RefreshGameStatus(row, col, number);
+        board[row, col] = value;
+        RefreshGameStatus(row, col, value);
         currentPlayerIndex = (currentPlayerIndex + 1) % PLAYER_COUNT;
+        AppendMove(row, col, value);
         
-        PostPlace(row, col, number);
+        PostPlace(row, col, value);
     }
 
     public bool IsAvailablePosition(int row, int col)
@@ -220,24 +227,24 @@ public abstract class GameBoard
         return board[row, col] == NOT_PLACED_FLAG;
     }
 
-    private void RefreshGameStatus(int row, int col, int number)
+    private void RefreshGameStatus(int row, int col, object value)
     {
         remainingFilledCount--;
-        bool isPlayerWin = CheckWin(row, col, number);
+        bool isPlayerWin = CheckWin(row, col, value);
         if (isPlayerWin) winnerId = currentPlayerIndex;
         
         isGameOver = remainingFilledCount == 0 || isPlayerWin;
     }
     
-    private int[][] ConvertToJaggedArray(int[,] board)
+    private object[][] ConvertToJaggedArray(object[,] board)
     {
         int rows = board.GetLength(0);
         int cols = board.GetLength(1);
-        int[][] jaggedArray = new int[rows][];
+        object[][] jaggedArray = new object[rows][];
 
         for (int i = 0; i < rows; i++)
         {
-            jaggedArray[i] = new int[cols];
+            jaggedArray[i] = new object[cols];
             for (int j = 0; j < cols; j++)
             {
                 jaggedArray[i][j] = board[i, j];
@@ -247,23 +254,41 @@ public abstract class GameBoard
         return jaggedArray;
     }
     
-    public void LoadFromJaggedArray(int[][] loadedBoard)
+    private object ConvertFromJsonElement(object value)
+    {
+        if (value is JsonElement jsonElement)
+        {
+            switch (jsonElement.ValueKind)
+            {
+                case JsonValueKind.Number:
+                    return jsonElement.GetInt32();
+                case JsonValueKind.String:
+                    return jsonElement.GetString();
+                default:
+                    throw new InvalidCastException($"Cannot convert '{value}' to a number");
+            }
+        }
+
+        return value;
+    }
+    
+    public void LoadFromJaggedArray(object[][] loadedBoard)
     {
         for (int i = 0; i < loadedBoard.Length; i++)
         {
             for (int j = 0; j < loadedBoard[0].Length; j++)
             {
-                if(loadedBoard[i][j] != 0)
-                    Place(i, j, loadedBoard[i][j]);
+                if(loadedBoard[i][j] != NOT_PLACED_FLAG)
+                    Place(i, j, ConvertFromJsonElement(loadedBoard[i][j]));
             }
         }
     }
     
-    private void ResumePlayerHoldings(Dictionary<int, int[]> playerHolding)
+    private void ResumePlayerHoldings(Dictionary<int, object[]> playerHolding)
     {
         foreach (var player in players)
         {
-            player.RemainingHoldings = playerHolding[player.PlayerNumber];
+            player.RemainingHoldings = playerHolding[player.PlayerNumber].Select(ConvertFromJsonElement).ToArray();
         }
     }
 
@@ -274,12 +299,12 @@ public abstract class GameBoard
 
     public void SaveGame()
     {
-        Dictionary<int, int[]> playerCards = new Dictionary<int, int[]>();
+        Dictionary<int, object[]> playerCards = new Dictionary<int, object[]>();
         foreach (BasePlayer p in players)
         {
             playerCards[p.PlayerNumber] = p.RemainingHoldings;
         }
-        GameState gameState = new GameState(Size, ConvertToJaggedArray(board), currentPlayerIndex, playerCards, mode, humanPlayFirst);
+        GameState gameState = new GameState(Size, ConvertToJaggedArray(board), currentPlayerIndex, playerCards, mode, humanPlayFirst, moveHistory, movePointer);
                 
         string json = JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GAME_RECORD_FILE_NAME, json);
@@ -344,5 +369,45 @@ public abstract class GameBoard
     
         Console.WriteLine("The current game board is:");
         DisplayBoard();
+    }
+
+    private void AppendMove(int row, int col, object value)
+    {
+        // should clear outdated history when make a new move
+        if (movePointer < moveHistory.Count - 1)
+        {
+            moveHistory.RemoveRange(movePointer + 1, moveHistory.Count - movePointer - 1);
+        }
+        
+        moveHistory.Add(new Move { Row = row, Col = col, Value = value });
+        movePointer++;
+    }
+
+    public void Undo()
+    {
+        if (movePointer < 0)
+        {
+            Console.WriteLine("Nothing to undo.");
+        }
+        else
+        {
+            var move = moveHistory[movePointer];
+            board[move.Row, move.Col] = NOT_PLACED_FLAG;
+            movePointer--;
+        }
+    }
+
+    public void Redo()
+    {
+        if (movePointer + 1 >= moveHistory.Count)
+        {
+            Console.WriteLine("Nothing to redo.");
+        }
+        else
+        {
+            movePointer++;
+            var move = moveHistory[movePointer];
+            Place(move.Row, move.Col, move.Value);
+        }
     }
 }

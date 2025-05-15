@@ -7,13 +7,15 @@ const int MAKE_MOVE_OPERATION_OPTION = 1;
 const int SAVE_GAME_OPERATION_OPTION = 2;
 const int VIEW_MANU_OPERATION_OPTION = 3;
 
-TicTacToeBoard ticTacToeBoard = new TicTacToeBoard();
+GameBoardFactory gameBoardFactory = new GameBoardFactory();
+string userChosenGame = RequestUserToChooseGameBoard();
+GameBoard gameBoard = gameBoardFactory.Create(userChosenGame);
 BasePlayer player;
 
-while (!ticTacToeBoard.IsGameOver)
+while (!gameBoard.IsGameOver)
 {
-    player = ticTacToeBoard.GetCurrentPlayer();
-    ticTacToeBoard.DisplayCurrentInformation();
+    player = gameBoard.GetCurrentPlayer();
+    gameBoard.DisplayCurrentInformation();
 
     if (player.IsHumanPlayer())
     {
@@ -21,25 +23,52 @@ while (!ticTacToeBoard.IsGameOver)
         switch (option)
         {
             case MAKE_MOVE_OPERATION_OPTION:
-                MakeMove(player, ticTacToeBoard);
+                MakeMove(player, gameBoard);
                 break;
             case SAVE_GAME_OPERATION_OPTION:
-                ticTacToeBoard.SaveGame();
-                MakeMove(player, ticTacToeBoard);
+                gameBoard.SaveGame();
+                MakeMove(player, gameBoard);
                 break;
             case VIEW_MANU_OPERATION_OPTION:
-                ticTacToeBoard.DisplayHelpMenu();
+                gameBoard.DisplayHelpMenu();
                 break;
         }
     }
     else
     {
-        MakeMove(player, ticTacToeBoard);
+        MakeMove(player, gameBoard);
     }
     Console.WriteLine();
 }
 
-ticTacToeBoard.HandleGameOver();
+gameBoard.HandleGameOver();
+
+string RequestUserToChooseGameBoard()
+{
+    var indexToKeyMap = GameBoardFactory.GameBoardMap.Keys
+        .Select((key, index) => new { Index = index + 1, Key = key })
+        .ToDictionary(x => x.Index, x => x.Key);
+
+    while (true)
+    {
+        Console.WriteLine("Please choose a game board to play: ");
+        foreach (var item in indexToKeyMap)
+        {
+            Console.WriteLine($"{item.Key}. {item.Value}");
+        }
+        
+        Console.Write("Please enter the number of the game you want to play: ");
+        if (int.TryParse(Console.ReadLine(), out int choice) && indexToKeyMap.TryGetValue(choice, out string selectedKey))
+        {
+            // the key for creating game board
+            return selectedKey;
+        }
+        else
+        {
+            Console.WriteLine("Invalid selection.");
+        }
+    }
+}
 
 int RequestUserToChooseNextOperation()
 {
@@ -58,14 +87,15 @@ int RequestUserToChooseNextOperation()
         else
         {
             Console.WriteLine("Invalid input. Try again.");
+            Console.WriteLine("");
         }
     }
     
     return operationOption;
 }
 
-void MakeMove(BasePlayer player, TicTacToeBoard ticTacToeBoard)
+void MakeMove(BasePlayer player, GameBoard gameBoard)
 {
-    (int row, int col, int chosenCard) = player.GetNextMove(ticTacToeBoard);
-    ticTacToeBoard.Place(row, col, chosenCard);
+    (int row, int col, object chosenCard) = player.GetNextMove(gameBoard);
+    gameBoard.Place(row, col, chosenCard);
 }

@@ -12,18 +12,18 @@ public class ComputerPlayer : HumanPlayer
         return false;
     }
     
-    public override (int, int, int) GetNextMove(TicTacToeBoard ticTacToeBoard)
+    public override (int, int, object) GetNextMove(GameBoard gameBoard)
     {
         List<(int, int)> availablePositions = new List<(int, int)>();
         
         // if there's position where is able to win now, then return it.
-        for (int i = 1; i <= ticTacToeBoard.Size; i++)
+        for (int i = 1; i <= gameBoard.Size; i++)
         {
-            for (int j = 1; j <= ticTacToeBoard.Size; j++)
+            for (int j = 1; j <= gameBoard.Size; j++)
             {
-                if (ticTacToeBoard.IsAvailablePosition(i, j))
+                if (gameBoard.IsAvailablePosition(i, j))
                 {
-                    int? winningCard = FindWinningCard(i, j, ticTacToeBoard);
+                    int? winningCard = FindWinningCard(i, j, gameBoard);
                     if (winningCard.HasValue)
                     {
                         return (i, j, winningCard.Value);
@@ -38,6 +38,7 @@ public class ComputerPlayer : HumanPlayer
 
         // pick a position and value randomly
         (int nextPositionRow, int nextPositionColumn) = availablePositions[PickIndexRandomly(availablePositions.Count)];
+
         return (nextPositionRow, nextPositionColumn, RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)]);
     }
 
@@ -48,12 +49,12 @@ public class ComputerPlayer : HumanPlayer
         return random.Next(0, length);
     }
 
-    private int? FindWinningCard(int row, int col, TicTacToeBoard ticTacToeBoard)
+    private int? FindWinningCard(int row, int col, GameBoard gameBoard)
     {
         foreach(int number in RemainingHoldings)
         {
             // if there's any position can let computer player win, then select it.
-            if (ticTacToeBoard.CheckWin(row, col, number))
+            if (gameBoard.CheckWin(row, col, number))
             {
                 return number;
             }

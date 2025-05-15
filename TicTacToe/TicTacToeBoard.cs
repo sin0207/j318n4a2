@@ -6,6 +6,7 @@ public class TicTacToeBoard : GameBoard
 {
     protected override int PLAYER_COUNT => 2;
     protected override string GAME_RECORD_FILE_NAME => "record.json";
+    protected override string GAMEBOARD_NAME => "TicTacToe";
     private int targetNumber;
 
     // for cache
@@ -113,7 +114,7 @@ public class TicTacToeBoard : GameBoard
             Console.Write(i.ToString().PadLeft(maxRowNumberWidth) + " |");
             for (int j = 1; j <= Size; j++)
             {
-                string output = board[i, j] == 0 ? "." : board[i, j].ToString();
+                string output = board[i, j] == NOT_PLACED_FLAG ? "." : board[i, j].ToString();
                 Console.Write(CenterText(output, maxColumnWidth) + "|"); // Padding for equal space width
             }
 
@@ -150,8 +151,9 @@ public class TicTacToeBoard : GameBoard
         return result;
     }
 
-    private void UpdateCacheMaps(int row, int col, int number)
+    private void UpdateCacheMaps(int row, int col, object value)
     {
+        int number = (int)value;
         currentSumMap["row_" + row] += number;
         currentFilledCountMap["row_" + row]++;
 
@@ -171,18 +173,23 @@ public class TicTacToeBoard : GameBoard
         }
     }
 
-    protected override void PrePlace(int row, int col, int number)
+    protected override void PrePlace(int row, int col, object value)
     {
-        GetCurrentPlayer().MarkCardAsUsed(number);
+        if (GetCurrentPlayer() is ICardHoldingPlayer cardHolder)
+        {
+            cardHolder.MarkCardAsUsed(value);
+        }
     }
 
-    protected override void PostPlace(int row, int col, int number)
+
+    protected override void PostPlace(int row, int col, object value)
     {
-        UpdateCacheMaps(row, col, number);
+        UpdateCacheMaps(row, col, value);
     }
 
-    public override bool CheckWin(int row, int col, int number)
+    public override bool CheckWin(int row, int col, object value)
     {
+        int? number = value as int?;
         if ((currentSumMap["row_" + row] + number == targetNumber && currentFilledCountMap["row_" + row] + 1 == Size)
             || (currentSumMap["col_" + col] + number == targetNumber &&
                 currentFilledCountMap["col_" + col] + 1 == Size))
@@ -201,7 +208,7 @@ public class TicTacToeBoard : GameBoard
         return false;
     }
 
-    public void DisplayHelpMenu()
+    public override void DisplayHelpMenu()
     {
         Console.WriteLine("\n=== HELP MENU ===");
         Console.WriteLine("TicTacToe Rules:");

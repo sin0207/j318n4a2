@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace TicTacToe;
 
-public class HumanPlayer : BasePlayer
+public class HumanPlayer : BaseTicTacToePlayer
 {
     public HumanPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
     {
@@ -13,10 +13,10 @@ public class HumanPlayer : BasePlayer
         return true;
     }
 
-    public override (int, int, int) GetNextMove(TicTacToeBoard ticTacToeBoard)
+    public override (int, int, object) GetNextMove(GameBoard gameBoard)
     {
         int chosenCard = RequestUserToChooseACard();
-        (int row, int col) = RequestUserToChoosePositions(ticTacToeBoard);
+        (int row, int col) = RequestUserToChoosePositions(gameBoard);
 
         return (row, col, chosenCard);
     }
@@ -40,7 +40,7 @@ public class HumanPlayer : BasePlayer
         return chosenCard;
     }
 
-    private (int, int) RequestUserToChoosePositions(TicTacToeBoard ticTacToeBoard)
+    private (int, int) RequestUserToChoosePositions(GameBoard gameBoard)
     {
         int row, col;
         while (true)
@@ -61,7 +61,7 @@ public class HumanPlayer : BasePlayer
                     col = col * 26 + (c - 'A' + 1);
                 }
                 
-                if (ticTacToeBoard.IsAvailablePosition(row, col))
+                if (gameBoard.IsAvailablePosition(row, col))
                     break;
                 
                 Console.WriteLine("The chosen position is not available, please try again.");
