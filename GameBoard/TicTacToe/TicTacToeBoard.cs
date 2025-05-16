@@ -5,21 +5,21 @@ namespace TicTacToe;
 
 public class TicTacToeBoard : GameBoard.GameBoard
 {
-    protected override int PLAYER_COUNT => 2;
-    protected override string GAME_RECORD_FILE_NAME => "record.json";
-    protected override string GAMEBOARD_NAME => "TicTacToe";
-    private int targetNumber;
+    protected override int PlayerCount => 2;
+    protected override string GameRecordFileName => "record.json";
+    protected override string GameBoardName => "TicTacToe";
+    private int _targetNumber;
 
     // cache some value for better performance
-    private Dictionary<string, int> currentSumMap;
-    private Dictionary<string, int> currentFilledCountMap;
+    private Dictionary<string, int> _currentSumMap;
+    private Dictionary<string, int> _currentFilledCountMap;
     // private readonly TicTacToeCardHolderInteractionStrategy cardholderInteraction;
     
     protected override void SetupGameBoard()
     {
         base.SetupGameBoard();
 
-        targetNumber = CalculateTargetNumber();
+        _targetNumber = CalculateTargetNumber();
         InitializeCacheMap();
     }
 
@@ -57,12 +57,12 @@ public class TicTacToeBoard : GameBoard.GameBoard
     private void InitializeCacheMap()
     {
         // using cached map to improve the performance by reducing traverse the entire board every time.
-        currentSumMap = new Dictionary<string, int>()
+        _currentSumMap = new Dictionary<string, int>()
         {
             { "diagonal_tl_to_br", 0 }, // top left to bottom right
             { "diagonal_tr_to_bl", 0 }, // top right to bottom left
         };
-        currentFilledCountMap = new Dictionary<string, int>()
+        _currentFilledCountMap = new Dictionary<string, int>()
         {
             { "diagonal_tl_to_br", 0 }, // top left to bottom right
             { "diagonal_tr_to_bl", 0 }, // top right to bottom left
@@ -70,10 +70,10 @@ public class TicTacToeBoard : GameBoard.GameBoard
 
         for (int i = 1; i <= Size; i++)
         {
-            currentSumMap["row_" + i] = 0;
-            currentSumMap["col_" + i] = 0;
-            currentFilledCountMap["row_" + i] = 0;
-            currentFilledCountMap["col_" + i] = 0;
+            _currentSumMap["row_" + i] = 0;
+            _currentSumMap["col_" + i] = 0;
+            _currentFilledCountMap["row_" + i] = 0;
+            _currentFilledCountMap["col_" + i] = 0;
         }
     }
 
@@ -88,22 +88,22 @@ public class TicTacToeBoard : GameBoard.GameBoard
             updateValue *= -1;
             filledCountUpdate = -1;
         }
-        currentSumMap["row_" + row] += updateValue;
-        currentFilledCountMap["row_" + row] += filledCountUpdate;
+        _currentSumMap["row_" + row] += updateValue;
+        _currentFilledCountMap["row_" + row] += filledCountUpdate;
 
-        currentSumMap["col_" + col] += updateValue;
-        currentFilledCountMap["col_" + col] += filledCountUpdate;
+        _currentSumMap["col_" + col] += updateValue;
+        _currentFilledCountMap["col_" + col] += filledCountUpdate;
 
         if (row == col)
         {
-            currentSumMap["diagonal_tl_to_br"] += updateValue;
-            currentFilledCountMap["diagonal_tl_to_br"] += filledCountUpdate;
+            _currentSumMap["diagonal_tl_to_br"] += updateValue;
+            _currentFilledCountMap["diagonal_tl_to_br"] += filledCountUpdate;
         }
 
         if (row + col == Size + 1)
         {
-            currentSumMap["diagonal_tr_to_bl"] += updateValue;
-            currentFilledCountMap["diagonal_tr_to_bl"] += filledCountUpdate;
+            _currentSumMap["diagonal_tr_to_bl"] += updateValue;
+            _currentFilledCountMap["diagonal_tr_to_bl"] += filledCountUpdate;
         }
     }
 
@@ -112,10 +112,10 @@ public class TicTacToeBoard : GameBoard.GameBoard
         if (GetCurrentPlayer() is ICardHoldingPlayer cardHolder)
         {
             // undo
-            if (value == NOT_PLACED_FLAG)
+            if (value == NotPlacedFlag)
             {
-                cardHolder.UnmarkCardAsUsed(board[row, col]);
-                UpdateCacheMaps(row, col, board[row, col], action: "delete");
+                cardHolder.UnmarkCardAsUsed(Board[row, col]);
+                UpdateCacheMaps(row, col, Board[row, col], action: "delete");
             }
             else // make new move
             {
@@ -131,19 +131,19 @@ public class TicTacToeBoard : GameBoard.GameBoard
         int lineCount = value == null ? 0 : 1;
         
         // when the row or col reaches the target number and all positions are filled
-        if ((currentSumMap["row_" + row] + number == targetNumber && currentFilledCountMap["row_" + row] + lineCount == Size)
-            || (currentSumMap["col_" + col] + number == targetNumber &&
-                currentFilledCountMap["col_" + col] + lineCount == Size))
+        if ((_currentSumMap["row_" + row] + number == _targetNumber && _currentFilledCountMap["row_" + row] + lineCount == Size)
+            || (_currentSumMap["col_" + col] + number == _targetNumber &&
+                _currentFilledCountMap["col_" + col] + lineCount == Size))
             return true;
 
         // point is on the top left to bottom right diagonal line
-        if (row == col && currentSumMap["diagonal_tl_to_br"] + number == targetNumber &&
-            currentFilledCountMap["diagonal_tl_to_br"] + lineCount == Size)
+        if (row == col && _currentSumMap["diagonal_tl_to_br"] + number == _targetNumber &&
+            _currentFilledCountMap["diagonal_tl_to_br"] + lineCount == Size)
             return true;
 
         // point is on the top right to bottom left diagonal line
-        if (row + col == Size + 1 && currentSumMap["diagonal_tr_to_bl"] + number == targetNumber &&
-            currentFilledCountMap["diagonal_tr_to_bl"] + lineCount == Size)
+        if (row + col == Size + 1 && _currentSumMap["diagonal_tr_to_bl"] + number == _targetNumber &&
+            _currentFilledCountMap["diagonal_tr_to_bl"] + lineCount == Size)
             return true;
 
         return false;
@@ -167,7 +167,7 @@ public class TicTacToeBoard : GameBoard.GameBoard
 
     protected override void DisplayMoreInformationForHumanPlayer()
     {
-        Console.WriteLine("\nYour goal is {0}", targetNumber);
+        Console.WriteLine("\nYour goal is {0}", _targetNumber);
     }
 
     protected override TicTacTocHumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
