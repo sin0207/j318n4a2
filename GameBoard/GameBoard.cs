@@ -7,6 +7,7 @@ public abstract class GameBoard
     // constants for player mode
     protected const int PLAY_WITH_PLAYER_MODE = 1;
     protected const int PLAY_WITH_COMPUTER_MODE = 2;
+    protected const int AUTO_MODE = 3;
     
     // constants for gaming option
     protected const int START_NEW_GAME_OPTION = 1;
@@ -145,6 +146,10 @@ public abstract class GameBoard
             // player 2 will be human player only when human vs human
             players[1] = InitializeHumanPlayer(boardSize, 2);
         }
+        else if (mode == AUTO_MODE)
+        {
+            players[1] = InitializeComputerPlayer(boardSize, 2);
+        }
         else
         {
             // player 2 could be computer or human player based on the mode and player 1's type
@@ -160,8 +165,9 @@ public abstract class GameBoard
             Console.WriteLine("Gaming modes: ");
             Console.WriteLine("{0}. Human vs Human", PLAY_WITH_PLAYER_MODE);
             Console.WriteLine("{0}. Human vs Computer", PLAY_WITH_COMPUTER_MODE);
+            Console.WriteLine("{0}. Computer vs Computer", AUTO_MODE);
             Console.Write("Please choose one of the gaming modes: ");
-            if (int.TryParse(Console.ReadLine(), out mode) && (mode == PLAY_WITH_PLAYER_MODE || mode == PLAY_WITH_COMPUTER_MODE))
+            if (int.TryParse(Console.ReadLine(), out mode) && (mode == PLAY_WITH_PLAYER_MODE || mode == PLAY_WITH_COMPUTER_MODE || mode == AUTO_MODE))
             {
                 break;
             }
@@ -518,7 +524,7 @@ public abstract class GameBoard
     
     private int CalculateMaxRowIdentifierWidth()
     {
-        int currentWidth = 0;
+        int currentWidth = 1;
         int size = Size;
         while (size > 1)
         {

@@ -42,17 +42,12 @@ public abstract class ComputerPlayer : HumanPlayer
 
         return (nextPositionRow, nextPositionColumn, GetValueForNextMove());
     }
-
-    private int PickIndexRandomly(int length)
+    
+    protected int PickIndexRandomly(int length)
     {
         Random random = new Random();
         
         return random.Next(0, length);
-    }
-
-    protected override object GetValueForNextMove()
-    {
-        return RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)];
     }
 
     private object? FindWinningValue(int row, int col, GameBoard gameBoard)

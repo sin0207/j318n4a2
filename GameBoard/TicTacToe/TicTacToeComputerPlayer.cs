@@ -49,4 +49,9 @@ public class TicTacToeComputerPlayer : ComputerPlayer, ICardHoldingPlayer
     {
         RemainingHoldings = _interaction.UnmarkCardAsUsed(RemainingHoldings, value);
     }
+    
+    protected override object GetValueForNextMove()
+    {
+        return RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)];
+    }
 }
