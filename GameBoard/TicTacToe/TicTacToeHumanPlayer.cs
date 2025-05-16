@@ -4,9 +4,14 @@ namespace TicTacToe;
 
 public class TicTacTocHumanPlayer : HumanPlayer, ICardHoldingPlayer
 {
-    public TicTacTocHumanPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
+    // for card holder interactions
+    // due to the c# constraint, so we can't inherit multiple classes at the same time
+    private readonly ICardHolderInteraction _interaction;
+    
+    public TicTacTocHumanPlayer(int boardSize, int playerNumber, ICardHolderInteraction interaction) : base(boardSize, playerNumber)
     {
-        RemainingHoldings = InitializeCards(boardSize);
+        _interaction = interaction;
+        RemainingHoldings = _interaction.InitializeCards(boardSize, playerNumber == 1);
     }
 
     public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
@@ -36,40 +41,14 @@ public class TicTacTocHumanPlayer : HumanPlayer, ICardHoldingPlayer
 
         return int.Parse(chosenCard);
     }
-    
-    public object[] InitializeCards(int totalCardNumber)
-    {
-        bool isFirstPlayer = (PlayerNumber == 1);
-        
-        // The first player has one more card compared to the second player if totalCardNumber is odd
-        int cardSize = (totalCardNumber / 2) + (isFirstPlayer && IsOdd(totalCardNumber) ? 1 : 0);
-        object[] cards = new object[cardSize];
-
-        int index = 0;
-        for (int i = 1; i <= totalCardNumber; i++)
-        {
-            if (IsOdd(i) == isFirstPlayer)
-            {
-                cards[index] = i;
-                index++;
-            }
-        }
-        
-        return cards;
-    }
-
-    protected bool IsOdd(int number)
-    {
-        return number % 2 != 0;
-    }
 
     public void MarkCardAsUsed(object value)
     {
-        RemainingHoldings = RemainingHoldings.Where(val => !val.Equals(value)).ToArray();
+        RemainingHoldings = _interaction.MarkCardAsUsed(RemainingHoldings, value);
     }
 
     public void UnmarkCardAsUsed(object value)
     {
-        RemainingHoldings = RemainingHoldings.Append(value).ToArray();
+        RemainingHoldings = _interaction.UnmarkCardAsUsed(RemainingHoldings, value);
     }
 }

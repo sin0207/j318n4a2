@@ -13,7 +13,8 @@ public class TicTacToeBoard : GameBoard.GameBoard
     // cache some value for better performance
     private Dictionary<string, int> currentSumMap;
     private Dictionary<string, int> currentFilledCountMap;
-
+    // private readonly TicTacToeCardHolderInteractionStrategy cardholderInteraction;
+    
     protected override void SetupGameBoard()
     {
         base.SetupGameBoard();
@@ -171,11 +172,11 @@ public class TicTacToeBoard : GameBoard.GameBoard
 
     protected override TicTacTocHumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
     {
-        return new TicTacTocHumanPlayer(boardSize, playerNumber);
+        return new TicTacTocHumanPlayer(boardSize, playerNumber, new TicTacToeCardHolderInteractionStrategy());
     }
     
     protected override TicTacToeComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
     {
-        return new TicTacToeComputerPlayer(boardSize, playerNumber);
+        return new TicTacToeComputerPlayer(boardSize, playerNumber, new TicTacToeCardHolderInteractionStrategy());
     }
 }

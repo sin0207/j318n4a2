@@ -4,9 +4,14 @@ namespace TicTacToe;
 
 public class TicTacToeComputerPlayer : ComputerPlayer, ICardHoldingPlayer
 {
-    public TicTacToeComputerPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
+    // for card holder interactions
+    // due to the c# constraint, so we can't inherit multiple classes at the same time
+    private readonly ICardHolderInteraction _interaction;
+    
+    public TicTacToeComputerPlayer(int boardSize, int playerNumber, ICardHolderInteraction interaction) : base(boardSize, playerNumber)
     {
-        RemainingHoldings = InitializeCards(boardSize);
+        _interaction = interaction;
+        RemainingHoldings = _interaction.InitializeCards(boardSize, playerNumber == 1);
     }
     
     public object[] InitializeCards(int totalCardNumber)
@@ -37,11 +42,11 @@ public class TicTacToeComputerPlayer : ComputerPlayer, ICardHoldingPlayer
 
     public void MarkCardAsUsed(object value)
     {
-        RemainingHoldings = RemainingHoldings.Where(val => !val.Equals(value)).ToArray();
+        RemainingHoldings = _interaction.MarkCardAsUsed(RemainingHoldings, value);
     }
 
     public void UnmarkCardAsUsed(object value)
     {
-        RemainingHoldings = RemainingHoldings.Append(value).ToArray();
+        RemainingHoldings = _interaction.UnmarkCardAsUsed(RemainingHoldings, value);
     }
 }
