@@ -10,7 +10,7 @@ public class TicTacToeBoard : GameBoard.GameBoard
     protected override string GAMEBOARD_NAME => "TicTacToe";
     private int targetNumber;
 
-    // for cache
+    // cache some value for better performance
     private Dictionary<string, int> currentSumMap;
     private Dictionary<string, int> currentFilledCountMap;
 
@@ -76,87 +76,12 @@ public class TicTacToeBoard : GameBoard.GameBoard
         }
     }
 
-    private int CalculateMaxRowIdentifierWidth()
-    {
-        int currentWidth = 0;
-        int size = Size;
-        while (size > 1)
-        {
-            currentWidth++;
-            size /= 10;
-        }
-
-        return currentWidth;
-    }
-
-    private static string CenterText(string text, int width)
-    {
-        int padding = (width - text.Length) / 2;
-        return text.PadLeft(text.Length + padding).PadRight(width);
-    }
-
-    public override void DisplayBoard()
-    {
-        int maxRowNumberWidth = CalculateMaxRowIdentifierWidth();
-        int maxColumnWidth = ConvertNumberToRowIdentifier(Size).Length + 2; // 2 is the left and right space
-        string header = "".PadRight(maxRowNumberWidth) + " |";
-        for (int i = 1; i <= Size; i++)
-        {
-            header += CenterText(ConvertToExcelColumn(i), maxColumnWidth) + "|";
-        }
-
-        string divider = new string('-', header.Length);
-
-        Console.WriteLine(header);
-        // Print row headers and the grid itself
-        for (int i = 1; i <= Size; i++)
-        {
-            Console.WriteLine(divider);
-            Console.Write(i.ToString().PadLeft(maxRowNumberWidth) + " |");
-            for (int j = 1; j <= Size; j++)
-            {
-                string output = board[i, j] == NOT_PLACED_FLAG ? "." : board[i, j].ToString();
-                Console.Write(CenterText(output, maxColumnWidth) + "|"); // Padding for equal space width
-            }
-
-            Console.WriteLine();
-        }
-
-        Console.WriteLine(divider);
-    }
-
-    // Convert number to Excel-style column (A-Z, AA-AZ, ...)
-    private static string ConvertToExcelColumn(int number)
-    {
-        string result = string.Empty;
-        while (number > 0)
-        {
-            number--; // Adjusting because Excel columns start at 1
-            result = (char)('A' + (number % 26)) + result;
-            number /= 26;
-        }
-
-        return result;
-    }
-
-    private string ConvertNumberToRowIdentifier(int number)
-    {
-        string result = "";
-        while (number > 0)
-        {
-            number--; // Adjusting because the alphabet starts at 1, not 0
-            result = (char)('A' + (number % 26)) + result;
-            number /= 26;
-        }
-
-        return result;
-    }
-
     private void UpdateCacheMaps(int row, int col, object value, string action = "insert")
     {
         int updateValue = (int)value;
         int filledCountUpdate = 1;
         
+        // when undo, we have to add the value back to the cache map
         if(action == "delete")
         {
             updateValue *= -1;
@@ -199,17 +124,12 @@ public class TicTacToeBoard : GameBoard.GameBoard
         }
     }
 
-
-    protected override void PostPlace(int row, int col, object value)
-    {
-        
-    }
-
     public override bool CheckWin(int row, int col, object value = null)
     {
         int number = value == null ? 0 : Convert.ToInt32(value);
         int lineCount = value == null ? 0 : 1;
         
+        // when the row or col reaches the target number and all positions are filled
         if ((currentSumMap["row_" + row] + number == targetNumber && currentFilledCountMap["row_" + row] + lineCount == Size)
             || (currentSumMap["col_" + col] + number == targetNumber &&
                 currentFilledCountMap["col_" + col] + lineCount == Size))

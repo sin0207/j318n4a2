@@ -11,20 +11,20 @@ public class TicTacTocHumanPlayer : HumanPlayer, ICardHoldingPlayer
 
     public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
     {
-        string chosenCard = GetValueForNextMove();
+        object chosenCard = GetValueForNextMove();
         (int row, int col) = RequestUserToChoosePositions(gameBoard);
 
         return (row, col, chosenCard);
     }
     
-    protected override string GetValueForNextMove()
+    protected override object GetValueForNextMove()
     {
         string chosenCard;
         while (true)
         {
             Console.Write("Please choose one of the following cards({0}): ", String.Join(", ", RemainingHoldings));
             chosenCard = Console.ReadLine();
-            if (RemainingHoldings.Contains(chosenCard))
+            if (RemainingHoldings.Any(c => c.ToString() == chosenCard))
             {
                 break;
             }
@@ -34,7 +34,7 @@ public class TicTacTocHumanPlayer : HumanPlayer, ICardHoldingPlayer
             }
         }
 
-        return chosenCard;
+        return int.Parse(chosenCard);
     }
     
     public object[] InitializeCards(int totalCardNumber)

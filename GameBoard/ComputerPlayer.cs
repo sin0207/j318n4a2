@@ -30,6 +30,7 @@ public abstract class ComputerPlayer : HumanPlayer
                     }
                     else
                     {
+                        // return the position and value can let computer player to win
                         return (i, j, winningCard);
                     }
                 }
