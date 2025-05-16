@@ -1,4 +1,4 @@
-namespace TicTacToe;
+namespace GameBoard;
 
 public class GameState
 {

@@ -1,6 +1,6 @@
-namespace TicTacToe;
+namespace GameBoard;
 
-public class ComputerPlayer : HumanPlayer
+public abstract class ComputerPlayer : HumanPlayer
 {
     public ComputerPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
     {
@@ -23,14 +23,14 @@ public class ComputerPlayer : HumanPlayer
             {
                 if (gameBoard.IsAvailablePosition(i, j))
                 {
-                    int? winningCard = FindWinningCard(i, j, gameBoard);
-                    if (winningCard.HasValue)
+                    object? winningCard = FindWinningValue(i, j, gameBoard);
+                    if (winningCard == null)
                     {
-                        return (i, j, winningCard.Value);
+                        availablePositions.Add((i, j));
                     }
                     else
                     {
-                        availablePositions.Add((i, j));
+                        return (i, j, winningCard);
                     }
                 }
             }
@@ -39,7 +39,7 @@ public class ComputerPlayer : HumanPlayer
         // pick a position and value randomly
         (int nextPositionRow, int nextPositionColumn) = availablePositions[PickIndexRandomly(availablePositions.Count)];
 
-        return (nextPositionRow, nextPositionColumn, RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)]);
+        return (nextPositionRow, nextPositionColumn, GetValueForNextMove());
     }
 
     private int PickIndexRandomly(int length)
@@ -49,14 +49,19 @@ public class ComputerPlayer : HumanPlayer
         return random.Next(0, length);
     }
 
-    private int? FindWinningCard(int row, int col, GameBoard gameBoard)
+    protected override object GetValueForNextMove()
     {
-        foreach(int number in RemainingHoldings)
+        return RemainingHoldings[PickIndexRandomly(RemainingHoldings.Length)];
+    }
+
+    private object? FindWinningValue(int row, int col, GameBoard gameBoard)
+    {
+        foreach(var value in RemainingHoldings)
         {
             // if there's any position can let computer player win, then select it.
-            if (gameBoard.CheckWin(row, col, number))
+            if (gameBoard.CheckWin(row, col, value))
             {
-                return number;
+                return value;
             }
         }
 

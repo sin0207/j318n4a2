@@ -1,4 +1,4 @@
-namespace TicTacToe;
+namespace GameBoard;
 
 public abstract class BasePlayer
 {
@@ -13,4 +13,5 @@ public abstract class BasePlayer
     public abstract bool IsHumanPlayer();
     
     public abstract (int, int, object) GetNextMove(GameBoard gameboard);
+    protected abstract object GetValueForNextMove();
 }

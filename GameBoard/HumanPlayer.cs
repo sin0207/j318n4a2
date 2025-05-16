@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 
-namespace TicTacToe;
+namespace GameBoard;
 
-public class HumanPlayer : BaseTicTacToePlayer
+public abstract class HumanPlayer : BasePlayer
 {
     public HumanPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
     {
@@ -15,32 +15,13 @@ public class HumanPlayer : BaseTicTacToePlayer
 
     public override (int, int, object) GetNextMove(GameBoard gameBoard)
     {
-        int chosenCard = RequestUserToChooseACard();
+        object chosenValue = GetValueForNextMove();
         (int row, int col) = RequestUserToChoosePositions(gameBoard);
 
-        return (row, col, chosenCard);
-    }
-    
-    private int RequestUserToChooseACard()
-    {
-        int chosenCard;
-        while (true)
-        {
-            Console.Write("Please choose one of the following cards({0}): ", String.Join(", ", RemainingHoldings));
-            if (int.TryParse(Console.ReadLine(), out chosenCard) && RemainingHoldings.Contains(chosenCard))
-            {
-                break;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Try again.");
-            }
-        }
-
-        return chosenCard;
+        return (row, col, chosenValue);
     }
 
-    private (int, int) RequestUserToChoosePositions(GameBoard gameBoard)
+    protected (int, int) RequestUserToChoosePositions(GameBoard gameBoard)
     {
         int row, col;
         while (true)

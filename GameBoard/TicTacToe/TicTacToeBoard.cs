@@ -1,8 +1,9 @@
 using System.Text.Json;
+using GameBoard;
 
 namespace TicTacToe;
 
-public class TicTacToeBoard : GameBoard
+public class TicTacToeBoard : GameBoard.GameBoard
 {
     protected override int PLAYER_COUNT => 2;
     protected override string GAME_RECORD_FILE_NAME => "record.json";
@@ -230,7 +231,7 @@ public class TicTacToeBoard : GameBoard
     public override void DisplayHelpMenu()
     {
         Console.WriteLine("\n=== HELP MENU ===");
-        Console.WriteLine("TicTacToe Rules:");
+        Console.WriteLine("GameBoard Rules:");
         Console.WriteLine("1. Each player has cards with numbers on them.");
         Console.WriteLine("2. Players take turns placing a card on the board.");
         Console.WriteLine(
@@ -246,5 +247,15 @@ public class TicTacToeBoard : GameBoard
     protected override void DisplayMoreInformationForHumanPlayer()
     {
         Console.WriteLine("\nYour goal is {0}", targetNumber);
+    }
+
+    protected override TicTacTocHumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
+    {
+        return new TicTacTocHumanPlayer(boardSize, playerNumber);
+    }
+    
+    protected override TicTacToeComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
+    {
+        return new TicTacToeComputerPlayer(boardSize, playerNumber);
     }
 }

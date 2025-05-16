@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace TicTacToe;
+namespace GameBoard;
 
 public abstract class GameBoard
 {
@@ -39,6 +39,8 @@ public abstract class GameBoard
     public abstract void DisplayBoard();
     public abstract bool CheckWin(int row, int col, object value = null);
     public abstract void DisplayHelpMenu();
+    protected abstract HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber);
+    protected abstract ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber);
 
     public GameBoard()
     {
@@ -132,21 +134,21 @@ public abstract class GameBoard
         players = new BasePlayer[PLAYER_COUNT];
         if (humanPlayFirst)
         {
-            players[0] = new HumanPlayer(boardSize, 1);    
+            players[0] = InitializeHumanPlayer(boardSize, 1);    
         }
         else
         {
-            players[0] = new ComputerPlayer(boardSize, 1);
+            players[0] = InitializeComputerPlayer(boardSize, 1);
         }
 
         if (mode == PLAY_WITH_PLAYER_MODE)
         {
             // player 2 will be human player only when human vs human
-            players[1] = new HumanPlayer(boardSize, 2);
+            players[1] = InitializeHumanPlayer(boardSize, 2);
         }
         else
         {
-            players[1] = players[0].IsHumanPlayer() ? new ComputerPlayer(boardSize, 2) : new HumanPlayer(boardSize, 2);
+            players[1] = players[0].IsHumanPlayer() ? InitializeComputerPlayer(boardSize, 2) : InitializeHumanPlayer(boardSize, 2);
         }
     }
     

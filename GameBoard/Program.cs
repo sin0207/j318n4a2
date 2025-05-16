@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using TicTacToe;
+using GameBoard;
 
 // constants for operation options
 const string MAKE_MOVE_OPERATION_OPTION = "make-move";
@@ -22,7 +22,7 @@ string userChosenGame = RequestUserToChooseGameBoard();
 
 Console.WriteLine(); // divider
 
-GameBoard gameBoard = gameBoardFactory.Create(userChosenGame);
+GameBoard.GameBoard gameBoard = gameBoardFactory.Create(userChosenGame);
 BasePlayer player;
 
 while (!gameBoard.IsGameOver)
@@ -113,7 +113,7 @@ string RequestUserToChooseNextOperation()
         .FirstOrDefault(pair => pair.Value == selectedLabel).Key;
 }
 
-void MakeMove(BasePlayer player, GameBoard gameBoard)
+void MakeMove(BasePlayer player, GameBoard.GameBoard gameBoard)
 {
     (int row, int col, object chosenCard) = player.GetNextMove(gameBoard);
     gameBoard.AppendMove(row, col, chosenCard);

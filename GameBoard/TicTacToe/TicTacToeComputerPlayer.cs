@@ -1,13 +1,15 @@
+using GameBoard;
+
 namespace TicTacToe;
 
-public abstract class BaseTicTacToePlayer : BasePlayer, ICardHoldingPlayer
+public class TicTacToeComputerPlayer : ComputerPlayer, ICardHoldingPlayer
 {
-    protected BaseTicTacToePlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
+    public TicTacToeComputerPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
     {
         RemainingHoldings = InitializeCards(boardSize);
     }
     
-    protected object[] InitializeCards(int totalCardNumber)
+    public object[] InitializeCards(int totalCardNumber)
     {
         bool isFirstPlayer = (PlayerNumber == 1);
         
