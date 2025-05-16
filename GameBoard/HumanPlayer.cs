@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 
-namespace TicTacToe;
+namespace GameBoard;
 
-public class HumanPlayer : BasePlayer
+public abstract class HumanPlayer : BasePlayer
 {
     public HumanPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
     {
@@ -13,34 +13,15 @@ public class HumanPlayer : BasePlayer
         return true;
     }
 
-    public override (int, int, int) GetNextMove(TicTacToeBoard ticTacToeBoard)
+    public override (int, int, object) GetNextMove(GameBoard gameBoard)
     {
-        int chosenCard = RequestUserToChooseACard();
-        (int row, int col) = RequestUserToChoosePositions(ticTacToeBoard);
+        object chosenValue = GetValueForNextMove();
+        (int row, int col) = RequestUserToChoosePositions(gameBoard);
 
-        return (row, col, chosenCard);
-    }
-    
-    private int RequestUserToChooseACard()
-    {
-        int chosenCard;
-        while (true)
-        {
-            Console.Write("Please choose one of the following cards({0}): ", String.Join(", ", RemainingCards));
-            if (int.TryParse(Console.ReadLine(), out chosenCard) && RemainingCards.Contains(chosenCard))
-            {
-                break;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Try again.");
-            }
-        }
-
-        return chosenCard;
+        return (row, col, chosenValue);
     }
 
-    private (int, int) RequestUserToChoosePositions(TicTacToeBoard ticTacToeBoard)
+    protected (int, int) RequestUserToChoosePositions(GameBoard gameBoard)
     {
         int row, col;
         while (true)
@@ -61,7 +42,7 @@ public class HumanPlayer : BasePlayer
                     col = col * 26 + (c - 'A' + 1);
                 }
                 
-                if (ticTacToeBoard.IsAvailablePosition(row, col))
+                if (gameBoard.IsAvailablePosition(row, col))
                     break;
                 
                 Console.WriteLine("The chosen position is not available, please try again.");
