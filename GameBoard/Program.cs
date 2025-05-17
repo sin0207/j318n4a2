@@ -17,6 +17,8 @@ Dictionary<string, string> AllowedOperationMap = new Dictionary<string, string>
     { VIEW_MANU_OPERATION_OPTION, "View help menu" },
 };
 
+// using registry to register all games at the beginning of program
+GameRegistry.RegisterAllGames();
 GameBoardFactory gameBoardFactory = new GameBoardFactory();
 string userChosenGame = RequestUserToChooseGameBoard();
 
@@ -24,6 +26,7 @@ Console.WriteLine(); // divider
 
 GameBoard.GameBoard gameBoard = gameBoardFactory.Create(userChosenGame);
 BasePlayer player;
+gameBoard.Start();
 
 while (!gameBoard.IsGameOver)
 {
@@ -95,7 +98,7 @@ int RequestUserToChooseFromList(Dictionary<int, string> indexToKeyMap, string su
 
 string RequestUserToChooseGameBoard()
 {
-    var indexToKeyMap = ToIndexedDictionary(GameBoardFactory.GameBoardMap.Keys);
+    var indexToKeyMap = ToIndexedDictionary(GameBoardFactory.ListRegisteredGames());
     int selectedIndex = RequestUserToChooseFromList(indexToKeyMap, "Please choose a game board to play: ", "Please enter the number of the game you want to play: ");
     
     return indexToKeyMap[selectedIndex];

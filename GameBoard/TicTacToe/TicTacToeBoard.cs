@@ -7,14 +7,18 @@ public class TicTacToeBoard : GameBoard.GameBoard
 {
     protected override int PlayerCount => 2;
     protected override string GameRecordFileName => "record.json";
-    protected override string GameBoardName => "TicTacToe";
+    public override string GameName => "TicTacToe";
     private int _targetNumber;
 
     // cache some value for better performance
     private Dictionary<string, int> _currentSumMap;
     private Dictionary<string, int> _currentFilledCountMap;
-    // private readonly TicTacToeCardHolderInteractionStrategy cardholderInteraction;
-    
+
+    static TicTacToeBoard()
+    {
+        GameBoardFactory.RegisterGame(() => new TicTacToeBoard());
+    }
+
     protected override void SetupGameBoard()
     {
         base.SetupGameBoard();

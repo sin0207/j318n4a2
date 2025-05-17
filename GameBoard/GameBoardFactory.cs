@@ -4,19 +4,27 @@ namespace GameBoard;
 
 public class GameBoardFactory
 {
-    public static readonly Dictionary<string, Func<GameBoard>> GameBoardMap = new Dictionary<string, Func<GameBoard>>
-    {
-        { "TicTacToe", () => new TicTacToeBoard() }
-    };
+    private static readonly Dictionary<string, Func<GameBoard>> _registerdBoards = new();
     
     public GameBoard Create(string gameBoard)
     {
-        if (GameBoardMap.TryGetValue(gameBoard, out var constructor))
+        if (_registerdBoards.TryGetValue(gameBoard, out var constructor))
         {
             // create game board
             return constructor();
         }
 
         throw new ArgumentException($"Game board {gameBoard} does not exist.");
+    }
+
+    public static void RegisterGame(Func<GameBoard> creator)
+    {
+        var tmpInstance = creator();
+        _registerdBoards[tmpInstance.GameName] = creator;
+    }
+    
+    public static IEnumerable<string> ListRegisteredGames()
+    {
+        return _registerdBoards.Keys;
     }
 }
