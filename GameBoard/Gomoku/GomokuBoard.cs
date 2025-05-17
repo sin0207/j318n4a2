@@ -7,10 +7,15 @@ public class GomokuBoard : GameBoard.GameBoard
 {
     protected override int PlayerCount => 2;
     protected override string GameRecordFileName => "gomoku-record.json";
-    protected override string GameBoardName => "Gomoku";
+    public override string GameName => "Gomoku";
     private const char FirstPlayerSymbol = 'o';
     private const char SecondPlayerSymbol = 'x';
 
+    static GomokuBoard()
+    {
+        GameBoardFactory.RegisterGame(() => new GomokuBoard());
+    }
+    
     protected override void SetupGameBoard()
     {
         Size = 15;
