@@ -32,8 +32,8 @@ public abstract class GameBoard
     private bool _humanPlayFirst;
     private BasePlayer[] _players;
     protected virtual string GameRecordFileName { get; }
-    protected virtual string GameBoardName { get; }
-    
+    public virtual string GameName => "Generic Game Board";
+
     private List<Move> _moveHistory = new List<Move>();
     private int _movePointer = -1;
     
@@ -41,10 +41,12 @@ public abstract class GameBoard
     public abstract void DisplayHelpMenu();
     protected abstract HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber);
     protected abstract ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber);
+    
+    protected GameBoard() { }
 
-    protected GameBoard()
+    public void Start()
     {
-        Console.WriteLine("Welcome to {0}!", GameBoardName);
+        Console.WriteLine("Welcome to {0}!", GameName);
         int startOption = RequestUserToChooseStartOption();
 
         if (startOption == StartNewGameOption) // start a new game
@@ -54,7 +56,7 @@ public abstract class GameBoard
         else // resume previous game
         {
             ResumePreviousGameBoard();
-        }
+        }        
     }
     
     private int RequestUserToChooseStartOption()
