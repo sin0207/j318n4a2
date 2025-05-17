@@ -34,10 +34,11 @@ public abstract class GameBoard
     protected virtual string GameRecordFileName { get; }
     public virtual string GameName => "Generic Game Board";
 
-    private List<Move> _moveHistory = new List<Move>();
+    // for move history
+    private List<Move> _moveHistory = new ();
     private int _movePointer = -1;
     
-    public abstract bool CheckWin(int row, int col, object value = null);
+    public abstract bool CheckWin(int row, int col, object? value = null);
     public abstract void DisplayHelpMenu();
     protected abstract HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber);
     protected abstract ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber);
@@ -325,12 +326,12 @@ public abstract class GameBoard
 
     public void SaveGame()
     {
-        Dictionary<int, object[]> playerCards = new Dictionary<int, object[]>();
+        Dictionary<int, object[]> playerHoldings = new Dictionary<int, object[]>();
         foreach (BasePlayer p in _players)
         {
-            playerCards[p.PlayerNumber] = p.RemainingHoldings;
+            playerHoldings[p.PlayerNumber] = p.RemainingHoldings;
         }
-        GameState gameState = new GameState(Size, ConvertToJaggedArray(Board), _currentPlayerIndex, playerCards, _mode, _humanPlayFirst, _moveHistory, _movePointer);
+        GameState gameState = new GameState(Size, ConvertToJaggedArray(Board), _currentPlayerIndex, playerHoldings, _mode, _humanPlayFirst, _moveHistory, _movePointer);
                 
         string json = JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GameRecordFileName, json);
@@ -412,7 +413,8 @@ public abstract class GameBoard
 
     public void Undo()
     {
-        if (_movePointer < 1)
+        // shouldn't undo until all players already made at least one move
+        if (_movePointer < PlayerCount)
         {
             Console.WriteLine("Nothing to undo.");
             PauseProgramByReadingKeyPress();
@@ -421,7 +423,9 @@ public abstract class GameBoard
         {
             // save current player
             int tmp = _currentPlayerIndex;
-            for(int i = 0; i < 2; i++)
+            
+            // undo all the moves in the previous round(all players)
+            for(int i = 0; i < PlayerCount; i++)
             {
                 var move = _moveHistory[_movePointer];
                 _currentPlayerIndex = move.PlayerIndex;
@@ -436,14 +440,16 @@ public abstract class GameBoard
 
     public void Redo()
     {
-        if (_movePointer + 2 >= _moveHistory.Count)
+        // shouldn't redo when the pointer is already pointing the last position
+        if (_movePointer + PlayerCount >= _moveHistory.Count)
         {
             Console.WriteLine("Nothing to redo.");
             PauseProgramByReadingKeyPress();
         }
         else
         {
-            for(int i = 0; i < 2; i++)
+            // redo all the moves in the next round from state of current game board
+            for(int i = 0; i < PlayerCount; i++)
             {
                 _movePointer++;
                 var move = _moveHistory[_movePointer];

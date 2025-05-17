@@ -23,15 +23,15 @@ public abstract class ComputerPlayer : HumanPlayer
             {
                 if (gameBoard.IsAvailablePosition(i, j))
                 {
-                    object? winningCard = FindWinningValue(i, j, gameBoard);
-                    if (winningCard == null)
+                    object? winningValue = FindWinningValue(i, j, gameBoard);
+                    if (winningValue == null)
                     {
                         availablePositions.Add((i, j));
                     }
                     else
                     {
                         // return the position and value can let computer player to win
-                        return (i, j, winningCard);
+                        return (i, j, winningValue);
                     }
                 }
             }

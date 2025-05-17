@@ -156,7 +156,7 @@ public class TicTacToeBoard : GameBoard.GameBoard
     public override void DisplayHelpMenu()
     {
         Console.WriteLine("\n=== HELP MENU ===");
-        Console.WriteLine("GameBoard Rules:");
+        Console.WriteLine("{0} Rules:", GameName);
         Console.WriteLine("1. Each player has cards with numbers on them.");
         Console.WriteLine("2. Players take turns placing a card on the board.");
         Console.WriteLine(
@@ -165,7 +165,9 @@ public class TicTacToeBoard : GameBoard.GameBoard
 
         Console.WriteLine("Actions:");
         Console.WriteLine("1. Make a Move: you can choose to make next move.");
-        Console.WriteLine("2. Save current game: you can save the current game state and resume later.");
+        Console.WriteLine("2. Undo move: you can undo your previous move from current game board.");
+        Console.WriteLine("3. Redo move: you can redo your previous undo move from current game board.");
+        Console.WriteLine("4. Save current game: you can save the current game state and resume later.");
         PauseProgramByReadingKeyPress();
     }
 

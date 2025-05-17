@@ -1,5 +1,3 @@
-using TicTacToe;
-
 namespace GameBoard;
 
 public class GameBoardFactory

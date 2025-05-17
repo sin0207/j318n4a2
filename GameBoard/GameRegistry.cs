@@ -4,7 +4,7 @@ public static class GameRegistry
 {
     public static void RegisterAllGames()
     {
-        // register only concrete game boards
+        // register only concrete game boards by using reflection
         var boardGameTypes = typeof(GameBoard).Assembly.GetTypes()
             .Where(t => typeof(GameBoard).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
@@ -13,6 +13,4 @@ public static class GameRegistry
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }
     }
-    
-    
 }

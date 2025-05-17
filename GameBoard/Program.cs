@@ -19,11 +19,11 @@ Dictionary<string, string> AllowedOperationMap = new Dictionary<string, string>
 
 // using registry to register all games at the beginning of program
 GameRegistry.RegisterAllGames();
-GameBoardFactory gameBoardFactory = new GameBoardFactory();
 string userChosenGame = RequestUserToChooseGameBoard();
 
 Console.WriteLine(); // divider
 
+GameBoardFactory gameBoardFactory = new GameBoardFactory();
 GameBoard.GameBoard gameBoard = gameBoardFactory.Create(userChosenGame);
 BasePlayer player;
 gameBoard.Start();
@@ -118,7 +118,7 @@ string RequestUserToChooseNextOperation()
 
 void MakeMove(BasePlayer player, GameBoard.GameBoard gameBoard)
 {
-    (int row, int col, object chosenCard) = player.GetNextMove(gameBoard);
-    gameBoard.AppendMove(row, col, chosenCard);
-    gameBoard.Place(row, col, chosenCard);
+    (int row, int col, object chosenValue) = player.GetNextMove(gameBoard);
+    gameBoard.AppendMove(row, col, chosenValue);
+    gameBoard.Place(row, col, chosenValue);
 }
