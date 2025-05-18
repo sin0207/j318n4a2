@@ -414,7 +414,7 @@ public abstract class GameBoard
     public void Undo()
     {
         // shouldn't undo until all players already made at least one move
-        if (_movePointer < PlayerCount)
+        if (_movePointer < PlayerCount - 1)
         {
             Console.WriteLine("Nothing to undo.");
             PauseProgramByReadingKeyPress();
