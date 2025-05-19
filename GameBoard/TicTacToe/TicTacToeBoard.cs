@@ -50,12 +50,14 @@ public class TicTacToeBoard : GameBoard.GameBoard
             }
         }
 
-        Size = boardSize;
+        // square board
+        RowSize = boardSize;
+        ColSize = boardSize;
     }
 
     private int CalculateTargetNumber()
     {
-        return Size * (Size * Size + 1) / 2;
+        return RowSize * (RowSize * RowSize + 1) / 2;
     }
 
     private void InitializeCacheMap()
@@ -72,7 +74,7 @@ public class TicTacToeBoard : GameBoard.GameBoard
             { "diagonal_tr_to_bl", 0 }, // top right to bottom left
         };
 
-        for (int i = 1; i <= Size; i++)
+        for (int i = 1; i <= RowSize; i++)
         {
             _currentSumMap["row_" + i] = 0;
             _currentSumMap["col_" + i] = 0;
@@ -104,7 +106,7 @@ public class TicTacToeBoard : GameBoard.GameBoard
             _currentFilledCountMap["diagonal_tl_to_br"] += filledCountUpdate;
         }
 
-        if (row + col == Size + 1)
+        if (row + col == RowSize + 1)
         {
             _currentSumMap["diagonal_tr_to_bl"] += updateValue;
             _currentFilledCountMap["diagonal_tr_to_bl"] += filledCountUpdate;
@@ -135,19 +137,19 @@ public class TicTacToeBoard : GameBoard.GameBoard
         int lineCount = value == null ? 0 : 1;
         
         // when the row or col reaches the target number and all positions are filled
-        if ((_currentSumMap["row_" + row] + number == _targetNumber && _currentFilledCountMap["row_" + row] + lineCount == Size)
+        if ((_currentSumMap["row_" + row] + number == _targetNumber && _currentFilledCountMap["row_" + row] + lineCount == RowSize)
             || (_currentSumMap["col_" + col] + number == _targetNumber &&
-                _currentFilledCountMap["col_" + col] + lineCount == Size))
+                _currentFilledCountMap["col_" + col] + lineCount == RowSize))
             return true;
 
         // point is on the top left to bottom right diagonal line
         if (row == col && _currentSumMap["diagonal_tl_to_br"] + number == _targetNumber &&
-            _currentFilledCountMap["diagonal_tl_to_br"] + lineCount == Size)
+            _currentFilledCountMap["diagonal_tl_to_br"] + lineCount == RowSize)
             return true;
 
         // point is on the top right to bottom left diagonal line
-        if (row + col == Size + 1 && _currentSumMap["diagonal_tr_to_bl"] + number == _targetNumber &&
-            _currentFilledCountMap["diagonal_tr_to_bl"] + lineCount == Size)
+        if (row + col == RowSize + 1 && _currentSumMap["diagonal_tr_to_bl"] + number == _targetNumber &&
+            _currentFilledCountMap["diagonal_tr_to_bl"] + lineCount == RowSize)
             return true;
 
         return false;

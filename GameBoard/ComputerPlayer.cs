@@ -17,9 +17,9 @@ public abstract class ComputerPlayer : HumanPlayer
         List<(int, int)> availablePositions = new List<(int, int)>();
         
         // if there's position where is able to win now, then return it.
-        for (int i = 1; i <= gameBoard.Size; i++)
+        for (int i = 1; i <= gameBoard.RowSize; i++)
         {
-            for (int j = 1; j <= gameBoard.Size; j++)
+            for (int j = 1; j <= gameBoard.ColSize; j++)
             {
                 if (gameBoard.IsAvailablePosition(i, j))
                 {
