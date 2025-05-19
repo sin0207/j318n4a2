@@ -241,7 +241,7 @@ public abstract class GameBoard
         return Board[row, col] == NotPlacedFlag;
     }
 
-    private void RefreshGameStatus(int row, int col, object? value)
+    protected virtual void RefreshGameStatus(int row, int col, object? value)
     {
         if (value == null) // for undo
         {
@@ -353,7 +353,7 @@ public abstract class GameBoard
         DisplayBoard("The final board is:");
     }
 
-    private void ShowResult()
+    protected virtual void ShowResult()
     {
         if (_winnerId == NoWinnerFlag)
         {
