@@ -2,7 +2,8 @@ namespace GameBoard;
 
 public class GameState
 {
-    public int BoardSize { get; set; }
+    public int RowSize { get; set; }
+    public int ColSize { get; set; }
     public object[][] Board { get; set; }
     public int CurrentPlayerIndex { get; set; }
     public Dictionary<int, object[]> PlayerHoldings { get; set; } // PlayerNumber -> RemainingCards
@@ -11,9 +12,10 @@ public class GameState
     public List<Move> MoveHistory { get; set; }
     public int MovePointer { get; set; }
     
-    public GameState(int boardSize, object[][] board, int currentPlayerIndex, Dictionary<int, object[]> playerHoldings, int mode, bool humanPlayFirst, List<Move> moveHistory, int movePointer)
+    public GameState(int rowSize, int colSize, object[][] board, int currentPlayerIndex, Dictionary<int, object[]> playerHoldings, int mode, bool humanPlayFirst, List<Move> moveHistory, int movePointer)
     {
-        BoardSize = boardSize;
+        RowSize = rowSize;
+        ColSize = colSize;
         Board = board;
         CurrentPlayerIndex = currentPlayerIndex;
         PlayerHoldings = playerHoldings;
