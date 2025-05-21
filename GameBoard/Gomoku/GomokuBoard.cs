@@ -14,6 +14,7 @@ public class GomokuBoard : GameBoard.GameBoard
     private const char SecondPlayerSymbol = 'x';
     public const int winningCount = 5;
     public const int minEdge = 0;
+    public const int size = 15;
 
     static GomokuBoard()
     {
@@ -22,15 +23,14 @@ public class GomokuBoard : GameBoard.GameBoard
     
     protected override void SetupGameBoard()
     {
-        Size = 15;
+        RowSize = 15;
+        ColSize = 15;
 
         base.SetupGameBoard();
     }
 
     public override bool CheckWin(int row, int col, object value = null)
     {
-        const int minEdge = 0;
-        const int winningCount = 5;
         if (value == null)
         {
             value = Board[row, col];
@@ -41,37 +41,38 @@ public class GomokuBoard : GameBoard.GameBoard
                CheckLine(row, col, 1, 0, value) || //Vertical line
                CheckLine(row, col, 1, 1, value) || //Diagonal line(\)
                CheckLine(row, col, 1, -1, value);  //Diagonal line(/)
-        }
+    }
 
     public bool CheckLine(int row, int col, int rowDiff, int colDiff, object value)
-        {
-        int count = 1;
-        int positive = CheckDirection(row, col, rowDiff, colDiff, value);
-        int negative = CheckDirection(row, col, -rowDiff, -colDiff, value);
+    {
+            int count = 1;
+            int positive = CheckDirection(row, col, rowDiff, colDiff, value);   //Positive direction
+            int negative = CheckDirection(row, col, -rowDiff, -colDiff, value); //Negative direction
 
-        count = count + positive + negative;
+            count = count + positive + negative;
 
-        return count >= 5;
-        }
+            return count >= 5; 
+    }
 
     public int CheckDirection(int row, int col, int rowDiff, int colDiff, object value)
-        {
-        int count = 0;
+    {
+            int count = 0;
 
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            int currentRow = row + (distance * rowDiff);
-            int currentCol = col + (distance * colDiff);
+            for (int distance = 1; distance < winningCount; distance++)
+            {
+                int currentRow = row + (distance * rowDiff);
+                int currentCol = col + (distance * colDiff);
 
-            if(currentRow<minEdge || currentRow >= Size || currentCol < minEdge || currentCol >= Size || 
-                Board[currentRow, currentCol] == null || !Board[currentRow, currentCol].Equals(value))
-        {
-                break;
-        }
-            count++;
-        }
+                if(currentRow<minEdge || currentRow >= size || currentCol < minEdge || currentCol >= size || 
+                    Board[currentRow, currentCol] == null || !Board[currentRow, currentCol].Equals(value))
+                {
+                    break;
+                }
+                
+                count++;
+            }
 
-        return count;
+            return count;
     }
 
     public override void DisplayHelpMenu()
