@@ -63,7 +63,7 @@ public class GomokuBoard : GameBoard.GameBoard
                 int currentRow = row + (distance * rowDiff);
                 int currentCol = col + (distance * colDiff);
 
-                if(currentRow<minEdge || currentRow >= size || currentCol < minEdge || currentCol >= size || 
+                if(currentRow<minEdge || currentRow > size || currentCol < minEdge || currentCol > size || 
                     Board[currentRow, currentCol] == null || !Board[currentRow, currentCol].Equals(value))
                 {
                     break;
