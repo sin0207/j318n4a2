@@ -95,10 +95,9 @@ namespace Notakto
         private void PrintSegment(int boardIndex)
         {
             int baseRow = boardIndex * 3 + 1;
-            // Column header
             Console.WriteLine("   | 1 | 2 | 3 |");
             Console.WriteLine("---+---+---+---");
-            // Each row A-C
+    
             for (int r = 0; r < 3; r++)
             {
                 char rowLetter = (char)('A' + r);  // Always A, B, C for each board
@@ -132,7 +131,7 @@ namespace Notakto
             if (!(gameBoard is NotaktoBoard nb))
                 throw new ArgumentException("Expected NotaktoBoard", nameof(gameBoard));
 
-            // 1) Choose a non-dead board
+            // Choose a non-dead board
             int boardNum;
             while (true)
             {
@@ -150,7 +149,7 @@ namespace Notakto
                 Console.WriteLine("Invalid — enter 1, 2 or 3.");
             }
 
-            // 2) Choose a row within selected board
+            //  Choose a row within selected board
             int localRow;
             while (true)
             {
@@ -164,7 +163,7 @@ namespace Notakto
                 Console.WriteLine("Invalid — enter A, B or C.");
             }
 
-            // 3) Choose column within selected board
+            // Choose column within selected board
             int col;
             while (true)
             {
