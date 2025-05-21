@@ -74,7 +74,7 @@ namespace Notakto
             PauseProgramByReadingKeyPress();
         }
 
-        public override void DisplayCurrentInformation()
+        public new void DisplayCurrentInformation()
         {
             var player = GetCurrentPlayer();
             Console.WriteLine(player.IsHumanPlayer()
