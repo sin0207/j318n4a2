@@ -4,6 +4,10 @@ namespace Notakto
 {
     public class NotaktoBoard : GameBoard.GameBoard
     {
+        protected override int PlayerCount => 2;
+        protected override string GameRecordFileName => _recordFileName;
+        public override string GameName => "Notakto";
+        
         private string _recordFileName = "notakto_save.json";
 
         static NotaktoBoard() => GameBoardFactory.RegisterGame(() => new NotaktoBoard());
@@ -14,13 +18,7 @@ namespace Notakto
             ColSize = 3;
         }
 
-        protected override int PlayerCount => 2;
-        protected override string GameRecordFileName => _recordFileName;
-        public override string GameName => "Notakto";
-
-        /// <summary>
         /// Check if a 3×3 segment forms a three-in-a-row for 'X'.
-        /// </summary>
         private bool IsBoardDeadSegment(int idx)
         {
             int baseRow = idx * 3 + 1;
@@ -36,9 +34,7 @@ namespace Notakto
             return false;
         }
 
-        /// <summary>
-        /// Public API to check if board index is dead.
-        /// </summary>
+
         public bool IsBoardDead(int boardIndex) => IsBoardDeadSegment(boardIndex);
 
         public override bool CheckWin(int row, int col, object? value = null)
