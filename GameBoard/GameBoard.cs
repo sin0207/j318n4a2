@@ -25,7 +25,8 @@ public abstract class GameBoard
     
     // game board settings
     protected virtual int PlayerCount { get; }
-    public int Size { get; protected set; }
+    public int RowSize { get; protected set; }
+    public int ColSize { get; protected set; }
     protected object[,] Board;
     private int _mode;
     private int _currentPlayerIndex;
@@ -107,10 +108,15 @@ public abstract class GameBoard
 
     protected virtual void SetupGameBoard()
     {
-        _remainingPositionCount = Size * Size;
-        Board = new object[Size + 1, Size + 1];
+        _remainingPositionCount = RowSize * ColSize;
+        InitializeBoard();
         _isGameOver = false;
         _currentPlayerIndex = 0;
+    }
+
+    protected void InitializeBoard()
+    {
+        Board = new object[RowSize + 1, ColSize + 1];
     }
     
     private void ResumePreviousGameBoard()
@@ -119,7 +125,8 @@ public abstract class GameBoard
         GameState loadedGame = JsonSerializer.Deserialize<GameState>(json);
     
         // assign values to restore the tic-tac-toe board and players
-        Size = loadedGame.BoardSize;
+        RowSize = loadedGame.RowSize;
+        ColSize = loadedGame.ColSize;
         _mode = loadedGame.Mode;
         _currentPlayerIndex = loadedGame.CurrentPlayerIndex;
         _humanPlayFirst = loadedGame.HumanPlayFirst;
@@ -133,7 +140,7 @@ public abstract class GameBoard
     
     private void InitializePlayers()
     {
-        int boardSize = Size * Size;
+        int boardSize = RowSize * ColSize;
         _players = new BasePlayer[PlayerCount];
         if (_humanPlayFirst)
         {
@@ -226,9 +233,9 @@ public abstract class GameBoard
         _currentPlayerIndex = (_currentPlayerIndex + 1) % PlayerCount;
     }
 
-    public bool IsAvailablePosition(int row, int col)
+    public virtual bool IsAvailablePosition(int row, int col)
     {
-        if(row < 1 || row > Size || col < 1 || col > Size)
+        if(row < 1 || row > RowSize || col < 1 || col > ColSize)
             return false;
         
         return Board[row, col] == NotPlacedFlag;
@@ -331,7 +338,7 @@ public abstract class GameBoard
         {
             playerHoldings[p.PlayerNumber] = p.RemainingHoldings;
         }
-        GameState gameState = new GameState(Size, ConvertToJaggedArray(Board), _currentPlayerIndex, playerHoldings, _mode, _humanPlayFirst, _moveHistory, _movePointer);
+        GameState gameState = new GameState(RowSize, ColSize, ConvertToJaggedArray(Board), _currentPlayerIndex, playerHoldings, _mode, _humanPlayFirst, _moveHistory, _movePointer);
                 
         string json = JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GameRecordFileName, json);
@@ -343,8 +350,7 @@ public abstract class GameBoard
     public void HandleGameOver()
     {
         ShowResult();
-        Console.WriteLine("The final board is:");
-        DisplayBoard();
+        DisplayBoard("The final board is:");
     }
 
     private void ShowResult()
@@ -374,7 +380,13 @@ public abstract class GameBoard
     // hook for displaying more information while displaying the board to user
     protected virtual void DisplayMoreInformationForHumanPlayer() { }
 
-    public void DisplayCurrentInformation()
+    public virtual void DisplayCurrentInformation()
+    {
+        DisplayCurrentPlayerInformation();
+        DisplayBoard("The current game board is:");
+    }
+
+    private void DisplayCurrentPlayerInformation()
     {
         BasePlayer player = GetCurrentPlayer();
         if (player.IsHumanPlayer())
@@ -394,9 +406,6 @@ public abstract class GameBoard
         {
             Console.WriteLine("Computer's turn: ");
         }
-    
-        Console.WriteLine("The current game board is:");
-        DisplayBoard();
     }
 
     public void AppendMove(int row, int col, object value)
@@ -414,7 +423,7 @@ public abstract class GameBoard
     public void Undo()
     {
         // shouldn't undo until all players already made at least one move
-        if (_movePointer < PlayerCount)
+        if (_movePointer < PlayerCount - 1)
         {
             Console.WriteLine("Nothing to undo.");
             PauseProgramByReadingKeyPress();
@@ -463,13 +472,23 @@ public abstract class GameBoard
         Console.WriteLine("\nPress any key to continue...");
         Console.ReadLine();
     }
-    
-    private void DisplayBoard()
+
+    protected virtual void DisplayBoard(string subject)
     {
+        Console.WriteLine(subject);
+        PrintBoard();
+    }
+    
+    protected void PrintBoard(int rowStart = 1, int colStart = 1, int? rowEnd = null, int? colEnd = null)
+    {
+        // if rowEnd and colEnd is not specified, set as rowSize and colSize
+        rowEnd ??= RowSize;
+        colEnd ??= ColSize;
+        
         int maxRowNumberWidth = CalculateMaxRowIdentifierWidth();
-        int maxColumnWidth = ConvertNumberToRowIdentifier(Size).Length + 2; // 2 is the left and right space
+        int maxColumnWidth = ConvertNumberToRowIdentifier(RowSize).Length + 2; // 2 is the left and right space
         string header = "".PadRight(maxRowNumberWidth) + " |";
-        for (int i = 1; i <= Size; i++)
+        for (int i = colStart; i <= colEnd; i++)
         {
             header += CenterText(ConvertToExcelColumn(i), maxColumnWidth) + "|";
         }
@@ -478,11 +497,11 @@ public abstract class GameBoard
 
         Console.WriteLine(header);
         // Print row headers and the grid itself
-        for (int i = 1; i <= Size; i++)
+        for (int i = rowStart; i <= rowEnd; i++)
         {
             Console.WriteLine(divider);
             Console.Write(i.ToString().PadLeft(maxRowNumberWidth) + " |");
-            for (int j = 1; j <= Size; j++)
+            for (int j = colStart; j <= colEnd; j++)
             {
                 string output = Board[i, j] == NotPlacedFlag ? "." : Board[i, j].ToString();
                 Console.Write(CenterText(output, maxColumnWidth) + "|"); // Padding for equal space width
@@ -530,7 +549,7 @@ public abstract class GameBoard
     private int CalculateMaxRowIdentifierWidth()
     {
         int currentWidth = 1;
-        int size = Size;
+        int size = RowSize;
         while (size > 1)
         {
             currentWidth++;

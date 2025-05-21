@@ -29,6 +29,8 @@ public class GomokuBoard : GameBoard.GameBoard
 
     public override bool CheckWin(int row, int col, object value = null)
     {
+        const int minEdge = 0;
+        const int winningCount = 5;
         if (value == null)
         {
             value = Board[row, col];
@@ -39,10 +41,10 @@ public class GomokuBoard : GameBoard.GameBoard
                CheckLine(row, col, 1, 0, value) || //Vertical line
                CheckLine(row, col, 1, 1, value) || //Diagonal line(\)
                CheckLine(row, col, 1, -1, value);  //Diagonal line(/)
-    }
+        }
 
     public bool CheckLine(int row, int col, int rowDiff, int colDiff, object value)
-    {
+        {
         int count = 1;
         int positive = CheckDirection(row, col, rowDiff, colDiff, value);
         int negative = CheckDirection(row, col, -rowDiff, -colDiff, value);
@@ -50,10 +52,10 @@ public class GomokuBoard : GameBoard.GameBoard
         count = count + positive + negative;
 
         return count >= 5;
-    }
+        }
 
     public int CheckDirection(int row, int col, int rowDiff, int colDiff, object value)
-    {
+        {
         int count = 0;
 
         for (int distance = 1; distance < winningCount; distance++)
@@ -63,15 +65,15 @@ public class GomokuBoard : GameBoard.GameBoard
 
             if(currentRow<minEdge || currentRow >= Size || currentCol < minEdge || currentCol >= Size || 
                 Board[currentRow, currentCol] == null || !Board[currentRow, currentCol].Equals(value))
-            {
+        {
                 break;
-            }
+        }
             count++;
         }
 
         return count;
     }
-    
+
     public override void DisplayHelpMenu()
     {
         Console.WriteLine("\n=== HELP MENU ===");
@@ -81,7 +83,7 @@ public class GomokuBoard : GameBoard.GameBoard
         Console.WriteLine(
             "3. The goal is to get an unbroken line of five stones in a row, column or diagonal.");
         Console.WriteLine("4. The first player to achieve this wins.\n");
-
+        
         Console.WriteLine("Actions:");
         Console.WriteLine("1. Make a Move: you can choose to make next move.");
         Console.WriteLine("2. Undo move: you can undo your previous move from current game board.");
