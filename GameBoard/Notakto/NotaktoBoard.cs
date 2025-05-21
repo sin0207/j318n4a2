@@ -31,7 +31,7 @@ public class NotaktoBoard : GameBoard.GameBoard
     protected override void DisplayBoard(string subject) {
         for (int i = 0; i < BoardCount; i++)
         {
-            Console.WriteLine("Board {0}", i + 1);
+            WriteLine("Board {0}", i + 1);
             int rowStart = (i * BoardSize) + 1;
             int rowEnd = rowStart + BoardSize - 1;
             PrintBoard(rowStart, 1, rowEnd, BoardSize);
@@ -42,6 +42,73 @@ public class NotaktoBoard : GameBoard.GameBoard
     {
         int boardIndex = (row - 1) / BoardSize;
         return BoardHasLine[boardIndex];
+    }
+
+    public void SetTempMove(int row, int col, object? value)
+    {
+        Board[row, col] = value;
+    }
+
+    public bool CauseLineDetect(int row, int col, object symbol)
+    {
+        int boardSize = 3;
+        int boardIndex = (row - 1) / boardSize;
+        int rowStart = boardIndex * boardSize + 1;
+        int rowEnd = rowStart + boardSize - 1;
+
+        // row checking
+        bool rowWin = true;
+        for (int i = 1; i <= boardSize; i++)
+        {
+            if (Board[row, i]?.ToString() != symbol)
+            {
+                rowWin = false;
+                break;
+            }
+        }
+
+        // col checking
+        bool colWin = true;
+        for (int i = rowStart; i <= rowEnd; i++)
+        {
+            if (Board[i, col]?.ToString() != symbol)
+            {
+                colWin = false;
+                break;
+            }
+        }
+
+        // diagonal (top-left to bottom-right) \
+        bool diag1Win = true;
+        if ((row - rowStart) == (col - 1))
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (Board[rowStart + i, i + 1]?.ToString() != symbol)
+                {
+                    diag1Win = false;
+                    break;
+                }
+            }
+        }
+        else diag1Win = false;
+
+        // diagonal (top-right to bottom-left) /
+        bool diag2Win = true;
+        if ((row - rowStart) == (boardSize - col))
+        {
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (Board[rowStart + i, boardSize - i]?.ToString() != symbol)
+                {
+                    diag2Win = false;
+                    break;
+                }
+            }
+        }
+        else diag2Win = false;
+
+        return false;
     }
 
     public override bool CheckWin(int row, int col, object? value = null)
@@ -137,9 +204,9 @@ public class NotaktoBoard : GameBoard.GameBoard
         int loserIndex = moveHistory?.Last().PlayerIndex ?? 0;
         int winnerIndex = (loserIndex == 0) ? 1 : 0;
 
-        Console.WriteLine("All boards are complete!");
-        Console.WriteLine("Player {0} loses the game.", loserIndex + 1);
-        Console.WriteLine("Player {0} wins!", winnerIndex + 1);
+        WriteLine("All boards are complete!");
+        WriteLine("Player {0} loses the game.", loserIndex + 1);
+        WriteLine("Player {0} wins!", winnerIndex + 1);
     }
 
     public override void DisplayHelpMenu()
@@ -154,7 +221,7 @@ public class NotaktoBoard : GameBoard.GameBoard
 
     protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
     {
-        throw new NotImplementedException();
+        return new NotaktoComputerPlayer(boardSize, playerNumber);
     }
 
     protected override HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
