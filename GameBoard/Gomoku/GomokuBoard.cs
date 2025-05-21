@@ -12,6 +12,8 @@ public class GomokuBoard : GameBoard.GameBoard
     public override string GameName => "Gomoku";
     private const char FirstPlayerSymbol = 'o';
     private const char SecondPlayerSymbol = 'x';
+    public const int winningCount = 5;
+    public const int minEdge = 0;
 
     static GomokuBoard()
     {
@@ -27,73 +29,64 @@ public class GomokuBoard : GameBoard.GameBoard
 
     public override bool CheckWin(int row, int col, object value = null)
     {
-        const int minEdge = 0;
-        const int winningCount = 5;
         if (value == null)
         {
             value = Board[row, col];
-            if (value == null) { return false; }
+            if(value == NotPlacedFlag) { return false; }
         }
-        //Horizontal line
-        int count = 1;
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            if (col + distance < Size && Board[row, col + distance] != null && Board[row, col + distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        for (int distance =1; distance <winningCount; distance++)
-        {
-            if (col - distance >= minEdge && Board[row, col - distance] != null && Board[row, col - distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        if (count >= winningCount) { return true; }
-        //Vertical line
-        count = 1;
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            if (row + distance < Size && Board[row + distance, col] != null && Board[row + distance, col].Equals(value)) { count++; }
-            else { break; }
-        }
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            if (row - distance >= minEdge && Board[row - distance, col] != null && Board[row - distance, col].Equals(value)) { count++; }
-            else { break; }
-        }
-        if (count >= winningCount) { return true; }
-        //Diagonally(\)
-        count = 1;
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            if (row + distance <Size && col + distance < Size && Board[row + distance, col + distance] != null && Board[row +distance, col + distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        for(int distance = 1; distance < winningCount; distance++)
-        {
-            if (row - distance >= minEdge && col - distance >= minEdge && Board[row - distance, col - distance] != null && Board[row - distance, col - distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        if (count >= winningCount) { return true; }
-        //Diagonally(/)
-        count = 1;
-        for(int distance = 1; distance < winningCount; distance++)
-        {
-            if (row + distance < Size && col - distance >= minEdge && Board[row + distance, col - distance] != null && Board[row + distance, col - distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        for (int distance = 1; distance < winningCount; distance++)
-        {
-            if (row - distance >= minEdge && col + distance < Size && Board[row - distance, col + distance] != null && Board[row - distance, col + distance].Equals(value)) { count++; }
-            else { break; }
-        }
-        if (count >= winningCount) { return true; }
-        return false;
+
+        return CheckLine(row, col, 0, 1, value) || //Horizontal line
+               CheckLine(row, col, 1, 0, value) || //Vertical line
+               CheckLine(row, col, 1, 1, value) || //Diagonal line(\)
+               CheckLine(row, col, 1, -1, value);  //Diagonal line(/)
     }
 
+    public bool CheckLine(int row, int col, int rowDiff, int colDiff, object value)
+    {
+        int count = 1;
+        int positive = CheckDirection(row, col, rowDiff, colDiff, value);
+        int negative = CheckDirection(row, col, -rowDiff, -colDiff, value);
+
+        count = count + positive + negative;
+
+        return count >= 5;
+    }
+
+    public int CheckDirection(int row, int col, int rowDiff, int colDiff, object value)
+    {
+        int count = 0;
+
+        for (int distance = 1; distance < winningCount; distance++)
+        {
+            int currentRow = row + (distance * rowDiff);
+            int currentCol = col + (distance * colDiff);
+
+            if(currentRow<minEdge || currentRow >= Size || currentCol < minEdge || currentCol >= Size || 
+                Board[currentRow, currentCol] == null || !Board[currentRow, currentCol].Equals(value))
+            {
+                break;
+            }
+            count++;
+        }
+
+        return count;
+    }
+    
     public override void DisplayHelpMenu()
     {
         Console.WriteLine("\n=== HELP MENU ===");
-        Console.WriteLine("Gomoku Command");
-        
+        Console.WriteLine("{0} Rules:", GameName);
+        Console.WriteLine("1. Each player has stone.");
+        Console.WriteLine("2. Players take turns placing a stone on the board.");
+        Console.WriteLine(
+            "3. The goal is to get an unbroken line of five stones in a row, column or diagonal.");
+        Console.WriteLine("4. The first player to achieve this wins.\n");
+
+        Console.WriteLine("Actions:");
+        Console.WriteLine("1. Make a Move: you can choose to make next move.");
+        Console.WriteLine("2. Undo move: you can undo your previous move from current game board.");
+        Console.WriteLine("3. Redo move: you can redo your previous undo move from current game board.");
+        Console.WriteLine("4. Save current game: you can save the current game state and resume later.");
         PauseProgramByReadingKeyPress();
     }
 
