@@ -65,7 +65,6 @@ namespace Notakto;
 
         public override void DisplayCurrentInformation()
         {
-            // 1) Kill reminders
             for (int b = 0; b < 3; b++)
             {
                 bool dead = IsBoardDead(b);
@@ -76,7 +75,6 @@ namespace Notakto;
                 }
             }
 
-            // 2) Player turn + segments
             var player = GetCurrentPlayer();
             Console.WriteLine(player.IsHumanPlayer()
                 ? $"Player {player.PlayerNumber}'s turn:"
@@ -92,8 +90,8 @@ namespace Notakto;
             }
         }
 
-protected override void RefreshGameStatus(int row, int col, object? value)
-{
+    protected override void RefreshGameStatus(int row, int col, object? value)
+    {
     // record the move so the built-in history advances
     AppendMove(row, col, value!);
 
@@ -108,11 +106,11 @@ protected override void RefreshGameStatus(int row, int col, object? value)
         // exit immediately so main loop stops
         Environment.Exit(0);
     }
-}
+    }
+    
     private void PrintSegment(int boardIndex)
     {
         int baseRow = boardIndex * 3 + 1;
-        // Columns A, B, C
         Console.WriteLine("   | A | B | C |");
         Console.WriteLine("---+---+---+---");
 
@@ -131,8 +129,8 @@ protected override void RefreshGameStatus(int row, int col, object? value)
         }
     }
 
-        protected override void ShowResult()
-{
+    protected override void ShowResult()
+    {
     // Pull in the private _moveHistory via reflection
     var historyField = typeof(GameBoard.GameBoard)
         .GetField("_moveHistory", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -144,14 +142,15 @@ protected override void RefreshGameStatus(int row, int col, object? value)
 
     Console.WriteLine("All boards are completed!");
     Console.WriteLine($"Player {winnerIndex + 1} wins!");
-}
+    }
+    
     protected override HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
     {
         return new NotaktoHumanPlayer(boardSize, playerNumber);
     }
 
-protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
-{
+    protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
+    {
     return new NotaktoComputerPlayer(boardSize, playerNumber);
-}
     }
+}
