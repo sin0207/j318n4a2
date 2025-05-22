@@ -1,6 +1,6 @@
 using GameBoard;
 
-namespace Notakto
+namespace Notakto;
 
     public class NotaktoBoard : GameBoard.GameBoard
     {
