@@ -1,0 +1,124 @@
+{
+  "RowSize": 9,
+  "ColSize": 3,
+  "Board": [
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      "X",
+      null,
+      null
+    ],
+    [
+      null,
+      "X",
+      null,
+      null
+    ],
+    [
+      null,
+      "X",
+      null,
+      null
+    ],
+    [
+      null,
+      "X",
+      "X",
+      null
+    ],
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      "X",
+      null,
+      "X"
+    ],
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      null,
+      null,
+      "X"
+    ]
+  ],
+  "CurrentPlayerIndex": 0,
+  "PlayerHoldings": {
+    "1": [],
+    "2": []
+  },
+  "Mode": 2,
+  "HumanPlayFirst": true,
+  "MoveHistory": [
+    {
+      "Row": 1,
+      "Col": 1,
+      "Value": "X",
+      "PlayerIndex": 0
+    },
+    {
+      "Row": 7,
+      "Col": 1,
+      "Value": "X",
+      "PlayerIndex": 1
+    },
+    {
+      "Row": 2,
+      "Col": 1,
+      "Value": "X",
+      "PlayerIndex": 0
+    },
+    {
+      "Row": 7,
+      "Col": 3,
+      "Value": "X",
+      "PlayerIndex": 1
+    },
+    {
+      "Row": 3,
+      "Col": 1,
+      "Value": "X",
+      "PlayerIndex": 0
+    },
+    {
+      "Row": 9,
+      "Col": 3,
+      "Value": "X",
+      "PlayerIndex": 1
+    },
+    {
+      "Row": 4,
+      "Col": 1,
+      "Value": "X",
+      "PlayerIndex": 0
+    },
+    {
+      "Row": 4,
+      "Col": 2,
+      "Value": "X",
+      "PlayerIndex": 1
+    }
+  ],
+  "MovePointer": 7
+}

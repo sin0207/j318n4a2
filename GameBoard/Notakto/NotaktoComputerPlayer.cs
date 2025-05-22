@@ -2,7 +2,10 @@ using GameBoard;
 namespace Notakto;
 public class NotaktoComputerPlayer : ComputerPlayer
 {
-  public NotaktoComputerPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber) {}
+  public NotaktoComputerPlayer(int boardSize, int playerNumber) : base(boardSize, playerNumber)
+  {
+    RemainingHoldings = Array.Empty<object>();
+  }
 
   public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
   {
