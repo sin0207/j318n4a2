@@ -1,7 +1,7 @@
 using GameBoard;
 
 namespace Notakto
-{
+
     public class NotaktoBoard : GameBoard.GameBoard
     {
         protected override int PlayerCount => 2;
@@ -60,17 +60,9 @@ namespace Notakto
         {
             Console.WriteLine("\n=== HELP MENU ===");
             Console.WriteLine("{0} Rules:", GameName);
-            Console.WriteLine("1. Three separate 3x3 boards.");
-            Console.WriteLine("2. Players take turns placing 'X' on any alive board.");
-            Console.WriteLine("3. Creating a three-in-a-row kills that board (removed from play).");
-            Console.WriteLine("4. The player who kills the last board loses.\n");
-
-            Console.WriteLine("Actions:");
-            Console.WriteLine("1. Make a Move");
-            Console.WriteLine("2. Undo move");
-            Console.WriteLine("3. Redo move");
-            Console.WriteLine("4. Save current game");
-            Console.WriteLine("5. View help menu");
+            Console.WriteLine("Two players alternate playing X in any free cell on any live board.");
+            Console.WriteLine("Once a board has three-in-a-row it is dead and removed from the game.");
+            Console.WriteLine("The player that is forced to complete three-in-a-row on the last live board is the loser.\n");
             PauseProgramByReadingKeyPress();
         }
 
@@ -118,105 +110,5 @@ namespace Notakto
 
         protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
             => new NotaktoComputerPlayer(boardSize, playerNumber);
-
-
-
-        public class NotaktoHumanPlayer : HumanPlayer
-    {
-        public NotaktoHumanPlayer(int boardSize, int playerNumber)
-            : base(boardSize, playerNumber) { }
-
-        public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
-        {
-            if (!(gameBoard is NotaktoBoard nb))
-                throw new ArgumentException("Expected NotaktoBoard", nameof(gameBoard));
-
-            // Choose a non-dead board
-            int boardNum;
-            while (true)
-            {
-                Console.Write("Choose board (1–3): ");
-                if (int.TryParse(Console.ReadLine(), out boardNum) && boardNum >= 1 && boardNum <= 3)
-                {
-                    // if this board is dead, prompt and retry
-                    if (nb.IsBoardDead(boardNum - 1))
-                    {
-                        Console.WriteLine("This board is killed! Please play on one of the other alive boards.");
-                        continue;
-                    }
-                    break;
-                }
-                Console.WriteLine("Invalid — enter 1, 2 or 3.");
-            }
-
-            //  Choose a row within selected board
-            int localRow;
-            while (true)
-            {
-                Console.Write("Choose row (A–C): ");
-                var s = Console.ReadLine()?.Trim().ToUpper();
-                if (!string.IsNullOrEmpty(s) && s.Length == 1 && s[0] >= 'A' && s[0] <= 'C')
-                {
-                    localRow = s[0] - 'A' + 1;
-                    break;
-                }
-                Console.WriteLine("Invalid — enter A, B or C.");
-            }
-
-            // Choose column within selected board
-            int col;
-            while (true)
-            {
-                Console.Write("Choose column (1–3): ");
-                if (int.TryParse(Console.ReadLine(), out col) && col >= 1 && col <= 3)
-                    break;
-                Console.WriteLine("Invalid — enter 1, 2 or 3.");
-            }
-
-            int globalRow = (boardNum - 1) * 3 + localRow;
-            return (globalRow, col, GetValueForNextMove());
-        }
-
-        protected override object GetValueForNextMove() => "X";
     }
 
-    public class NotaktoComputerPlayer : ComputerPlayer
-    {
-        public NotaktoComputerPlayer(int boardSize, int playerNumber)
-            : base(boardSize, playerNumber) { }
-
-        public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
-        {
-            if (!(gameBoard is NotaktoBoard nb))
-                throw new ArgumentException("Expected NotaktoBoard", nameof(gameBoard));
-
-            // filter moves only on alive boards
-            var all = new List<(int, int)>();
-            foreach (var b in Enumerable.Range(0, 3))
-            {
-                if (nb.IsBoardDead(b)) continue;
-                int baseRow = b * 3 + 1;
-                for (int r = 0; r < 3; r++)
-                for (int c = 1; c <= 3; c++)
-                {
-                    int gr = baseRow + r;
-                    if (nb.IsAvailablePosition(gr, c))
-                        all.Add((gr, c));
-                }
-            }
-
-            // among alive positions, avoid final kill
-            int aliveCount = Enumerable.Range(0, 3).Count(i => !nb.IsBoardDead(i));
-            var safe = all.Where(pos => !
-                (aliveCount == 1 && nb.CheckWin(pos.Item1, pos.Item2, "X"))
-            ).ToList();
-
-            var choices = safe.Any() ? safe : all;
-            var pick = choices[PickIndexRandomly(choices.Count)];
-            return (pick.Item1, pick.Item2, GetValueForNextMove());
-        }
-
-
-            protected override object GetValueForNextMove() => "X";
-        }
-    } }
