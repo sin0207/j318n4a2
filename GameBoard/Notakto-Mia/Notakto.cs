@@ -1,4 +1,5 @@
 using GameBoard;
+using System.Reflection;
 
 namespace Notakto;
 
@@ -7,10 +8,12 @@ namespace Notakto;
         protected override int PlayerCount => 2;
         protected override string GameRecordFileName => _recordFileName;
         public override string GameName => "Notakto";
-        
-        private string _recordFileName = "notakto_save.json";
 
-        static NotaktoBoard() => GameBoardFactory.RegisterGame(() => new NotaktoBoard());
+        private readonly string _recordFileName = "notakto_save.json";
+        private readonly bool[] BoardWasDead = new bool[3];
+
+        static NotaktoBoard()
+            => GameBoardFactory.RegisterGame(() => new NotaktoBoard());
 
         public NotaktoBoard()
         {
@@ -18,24 +21,18 @@ namespace Notakto;
             ColSize = 3;
         }
 
-        /// Check if a 3×3 segment forms a three-in-a-row for 'X'.
         private bool IsBoardDeadSegment(int idx)
         {
             int baseRow = idx * 3 + 1;
-            // if any triple exists on this board, it's dead
             for (int r = 0; r < 3; r++)
-            {
                 for (int c = 1; c <= 3; c++)
-                {
                     if (CheckWin(baseRow + r, c, "X"))
                         return true;
-                }
-            }
             return false;
         }
 
-
-        public bool IsBoardDead(int boardIndex) => IsBoardDeadSegment(boardIndex);
+        public bool IsBoardDead(int boardIndex)
+            => IsBoardDeadSegment(boardIndex);
 
         public override bool CheckWin(int row, int col, object? value = null)
         {
@@ -66,49 +63,95 @@ namespace Notakto;
             PauseProgramByReadingKeyPress();
         }
 
-        public new void DisplayCurrentInformation()
+        public override void DisplayCurrentInformation()
         {
+            // 1) Kill reminders
+            for (int b = 0; b < 3; b++)
+            {
+                bool dead = IsBoardDead(b);
+                if (dead && !BoardWasDead[b])
+                {
+                    Console.WriteLine($"Board {b + 1} is [KILLED]! Please choose a non-dead board.");
+                    BoardWasDead[b] = true;
+                }
+            }
+
+            // 2) Player turn + segments
             var player = GetCurrentPlayer();
             Console.WriteLine(player.IsHumanPlayer()
                 ? $"Player {player.PlayerNumber}'s turn:"
                 : "Computer's turn:");
             Console.WriteLine("The current game board is:");
 
-            // For each 3×3 board segment
             for (int b = 0; b < 3; b++)
             {
-                string status = IsBoardDead(b) ? " [KILLED]" : string.Empty;
-                Console.WriteLine($"Board {b + 1} {status}:");
+                string status = IsBoardDead(b) ? " [KILLED]" : "";
+                Console.WriteLine($"Board {b + 1}{status}:");
                 PrintSegment(b);
                 Console.WriteLine();
             }
         }
 
-        private void PrintSegment(int boardIndex)
+protected override void RefreshGameStatus(int row, int col, object? value)
+{
+    // record the move so the built-in history advances
+    AppendMove(row, col, value!);
+
+    // let the base class update remaining positions
+    base.RefreshGameStatus(row, col, value);
+
+    // if *all* three 3×3 segments have been killed, fire game-over
+    if (Enumerable.Range(0, 3).All(b => IsBoardDead(b)))
+    {
+        // display final result
+        HandleGameOver();
+        // exit immediately so main loop stops
+        Environment.Exit(0);
+    }
+}
+    private void PrintSegment(int boardIndex)
+    {
+        int baseRow = boardIndex * 3 + 1;
+        // Columns A, B, C
+        Console.WriteLine("   | A | B | C |");
+        Console.WriteLine("---+---+---+---");
+
+        for (int r = 0; r < 3; r++)
         {
-            int baseRow = boardIndex * 3 + 1;
-            Console.WriteLine("   | 1 | 2 | 3 |");
-            Console.WriteLine("---+---+---+---");
-    
-            for (int r = 0; r < 3; r++)
+            int rowNum = baseRow + r;
+            Console.Write(rowNum.ToString().PadLeft(2) + " |");
+            for (int c = 1; c <= 3; c++)
             {
-                char rowLetter = (char)('A' + r);  // Always A, B, C for each board
-                Console.Write(rowLetter + "  |");
-                for (int c = 1; c <= 3; c++)
-                {
-                    var val = Board[baseRow + r, c] == NotPlacedFlag ? "." : Board[baseRow + r, c].ToString();
-                    Console.Write(" " + val + " |");
-                }
-                Console.WriteLine();
-                Console.WriteLine("---+---+---+---");
+                var val = Board[rowNum, c] == NotPlacedFlag
+                    ? "." : Board[rowNum, c].ToString();
+                Console.Write(" " + val + " |");
             }
+            Console.WriteLine();
+            Console.WriteLine("---+---+---+---");
         }
-
-
-        protected override HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
-            => new NotaktoHumanPlayer(boardSize, playerNumber);
-
-        protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
-            => new NotaktoComputerPlayer(boardSize, playerNumber);
     }
 
+        protected override void ShowResult()
+{
+    // Pull in the private _moveHistory via reflection
+    var historyField = typeof(GameBoard.GameBoard)
+        .GetField("_moveHistory", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    var history = (List<Move>)historyField.GetValue(this)!;
+
+    // The last move’s PlayerIndex is the one who caused the final kill
+    int loserIndex  = history.Last().PlayerIndex;
+    int winnerIndex = loserIndex == 0 ? 1 : 0;
+
+    Console.WriteLine("All boards are completed!");
+    Console.WriteLine($"Player {winnerIndex + 1} wins!");
+}
+    protected override HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
+    {
+        return new NotaktoHumanPlayer(boardSize, playerNumber);
+    }
+
+protected override ComputerPlayer InitializeComputerPlayer(int boardSize, int playerNumber)
+{
+    return new NotaktoComputerPlayer(boardSize, playerNumber);
+}
+    }
