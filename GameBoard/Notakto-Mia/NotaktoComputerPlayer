@@ -1,0 +1,44 @@
+using GameBoard;
+
+namespace Notakto;
+
+public class NotaktoComputerPlayer : ComputerPlayer
+    {
+        public NotaktoComputerPlayer(int boardSize, int playerNumber)
+            : base(boardSize, playerNumber) { }
+
+        public override (int, int, object) GetNextMove(GameBoard.GameBoard gameBoard)
+        {
+            if (!(gameBoard is NotaktoBoard nb))
+                throw new ArgumentException("Expected NotaktoBoard", nameof(gameBoard));
+
+            // filter moves only on alive boards
+            var all = new List<(int, int)>();
+            foreach (var b in Enumerable.Range(0, 3))
+            {
+                if (nb.IsBoardDead(b)) continue;
+                int baseRow = b * 3 + 1;
+                for (int r = 0; r < 3; r++)
+                for (int c = 1; c <= 3; c++)
+                {
+                    int gr = baseRow + r;
+                    if (nb.IsAvailablePosition(gr, c))
+                        all.Add((gr, c));
+                }
+            }
+
+            // among alive positions, avoid final kill
+            int aliveCount = Enumerable.Range(0, 3).Count(i => !nb.IsBoardDead(i));
+            var safe = all.Where(pos => !
+                (aliveCount == 1 && nb.CheckWin(pos.Item1, pos.Item2, "X"))
+            ).ToList();
+
+            var choices = safe.Any() ? safe : all;
+            var pick = choices[PickIndexRandomly(choices.Count)];
+            return (pick.Item1, pick.Item2, GetValueForNextMove());
+        }
+
+
+            protected override object GetValueForNextMove() => "X";
+        }
+   
