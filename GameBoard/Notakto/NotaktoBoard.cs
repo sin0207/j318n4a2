@@ -181,9 +181,82 @@ public class NotaktoBoard : GameBoard.GameBoard
         return false;
     }
 
+    public void RecheckBoardHasLineStatus()
+    {
+        int boardSize = 3;
+        for (int boardIndex = 0; boardIndex < 3; boardIndex++)
+        {
+            int rowStart = boardIndex * boardSize + 1;
+            int rowEnd = rowStart + boardSize - 1;
+
+            bool hasLine = false;
+
+            // check rows
+            for (int r = rowStart; r <= rowEnd && !hasLine; r++)
+            {
+                bool rowFull = true;
+                for (int c = 1; c <= boardSize; c++)
+                {
+                    if (Board[r, c]?.ToString() != "X")
+                    {
+                        rowFull = false;
+                        break;
+                    }
+                }
+                if (rowFull) hasLine = true;
+            }
+
+            // check columns
+            for (int c = 1; c <= boardSize && !hasLine; c++)
+            {
+                bool colFull = true;
+                for (int i = 0; i < boardSize; i++)
+                {
+                    if (Board[rowStart + i, c]?.ToString() != "X")
+                    {
+                        colFull = false;
+                        break;
+                    }
+                }
+                if (colFull) hasLine = true;
+            }
+
+            // check diagonal \
+            if (!hasLine)
+            {
+                bool diag1 = true;
+                for (int i = 0; i < boardSize; i++)
+                {
+                    if (Board[rowStart + i, i + 1]?.ToString() != "X")
+                    {
+                        diag1 = false;
+                        break;
+                    }
+                }
+                if (diag1) hasLine = true;
+            }
+
+            // check diagonal /
+            if (!hasLine)
+            {
+                bool diag2 = true;
+                for (int i = 0; i < boardSize; i++)
+                {
+                    if (Board[rowStart + i, boardSize - i]?.ToString() != "X")
+                    {
+                        diag2 = false;
+                        break;
+                    }
+                }
+                if (diag2) hasLine = true;
+            }
+            BoardHasLine[boardIndex] = hasLine;
+        }
+    }
     protected override void RefreshGameStatus(int row, int col, object? value)
     {
         base.RefreshGameStatus(row, col, value);
+        RecheckBoardHasLineStatus();
 
         // check if all boards are completed
         if (BoardHasLine.All(b => b))
