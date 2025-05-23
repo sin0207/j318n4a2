@@ -299,6 +299,6 @@ public class NotaktoBoard : GameBoard.GameBoard
 
     protected override HumanPlayer InitializeHumanPlayer(int boardSize, int playerNumber)
     {
-        return new NotakoHumanPlayer(boardSize, playerNumber);
+        return new NotaktoHumanPlayer(boardSize, playerNumber);
     }
 }
