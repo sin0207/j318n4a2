@@ -247,10 +247,10 @@ public abstract class GameBoard
         }
 
         bool isPlayerWin = CheckWin(row, col);
-        _isGameOver = _remainingPositionCount == 0 || isPlayerWin|| isGameCompleted(isPlayerWin);
+        _isGameOver = _remainingPositionCount == 0 || IsGameCompleted(isPlayerWin);
     }
 
-    protected virtual bool isGameCompleted(bool isPlayerWin)
+    protected virtual bool IsGameCompleted(bool isPlayerWin)
     {
         if (isPlayerWin) winnerId = currentPlayerIndex;
 

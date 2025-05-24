@@ -121,7 +121,7 @@ public class NotaktoBoard : GameBoard.GameBoard
         return false;
     }
 
-    protected override bool isGameCompleted(bool isPlayerWin)
+    protected override bool IsGameCompleted(bool isPlayerWin)
     {
         bool isGameCompleted = _boardHasLine.All(b => b);
 
