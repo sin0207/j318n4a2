@@ -497,7 +497,7 @@ public abstract class GameBoard
             Console.Write(i.ToString().PadLeft(maxRowNumberWidth) + " |");
             for (int j = colStart; j <= colEnd; j++)
             {
-                string output = Board[i, j] == NotPlacedFlag ? "." : Board[i, j].ToString();
+                string output = Board[i, j] == NotPlacedFlag ? " " : Board[i, j].ToString();
                 Console.Write(CenterText(output, maxColumnWidth) + "|"); // Padding for equal space width
             }
 
