@@ -15,7 +15,7 @@ public abstract class GameBoard
     // Flags
     protected const object NotPlacedFlag = null;
     private const int NoWinnerFlag = -1;
-    private int _winnerId = NoWinnerFlag;
+    protected int winnerId = NoWinnerFlag;
     
     // for finished checking
     private int _remainingPositionCount;
@@ -28,7 +28,7 @@ public abstract class GameBoard
     public int ColSize { get; protected set; }
     protected object[,] Board;
     private int _mode;
-    private int _currentPlayerIndex;
+    protected int currentPlayerIndex;
     private bool _humanPlayFirst;
     private BasePlayer[] _players;
     protected virtual string GameRecordFileName { get; }
@@ -110,7 +110,7 @@ public abstract class GameBoard
         _remainingPositionCount = RowSize * ColSize;
         InitializeBoard();
         _isGameOver = false;
-        _currentPlayerIndex = 0;
+        currentPlayerIndex = 0;
     }
 
     protected void InitializeBoard()
@@ -127,7 +127,7 @@ public abstract class GameBoard
         RowSize = loadedGame.RowSize;
         ColSize = loadedGame.ColSize;
         _mode = loadedGame.Mode;
-        _currentPlayerIndex = loadedGame.CurrentPlayerIndex;
+        currentPlayerIndex = loadedGame.CurrentPlayerIndex;
         _humanPlayFirst = loadedGame.HumanPlayFirst;
 
         SetupGameBoard();
@@ -224,7 +224,7 @@ public abstract class GameBoard
         Board[row, col] = value;
         RefreshGameStatus(row, col, value);
         // move to next player
-        _currentPlayerIndex = (_currentPlayerIndex + 1) % PlayerCount;
+        currentPlayerIndex = (currentPlayerIndex + 1) % PlayerCount;
     }
 
     public virtual bool IsAvailablePosition(int row, int col)
@@ -245,11 +245,16 @@ public abstract class GameBoard
         {
             _remainingPositionCount--;   
         }
-        
+
         bool isPlayerWin = CheckWin(row, col);
-        if (isPlayerWin) _winnerId = _currentPlayerIndex;
-        
-        _isGameOver = _remainingPositionCount == 0 || isPlayerWin;
+        _isGameOver = _remainingPositionCount == 0 || isPlayerWin|| isGameCompleted(isPlayerWin);
+    }
+
+    protected virtual bool isGameCompleted(bool isPlayerWin)
+    {
+        if (isPlayerWin) winnerId = currentPlayerIndex;
+
+        return isPlayerWin;
     }
     
     // covert board to jagged array for saving game
@@ -322,7 +327,7 @@ public abstract class GameBoard
 
     public BasePlayer GetCurrentPlayer()
     {
-        return _players[_currentPlayerIndex];
+        return _players[currentPlayerIndex];
     }
 
     public void SaveGame()
@@ -332,7 +337,7 @@ public abstract class GameBoard
         {
             playerHoldings[p.PlayerNumber] = p.RemainingHoldings;
         }
-        GameState gameState = new GameState(RowSize, ColSize, ConvertToJaggedArray(Board), _currentPlayerIndex, playerHoldings, _mode, _humanPlayFirst, _moveHistory, _movePointer);
+        GameState gameState = new GameState(RowSize, ColSize, ConvertToJaggedArray(Board), currentPlayerIndex, playerHoldings, _mode, _humanPlayFirst, _moveHistory, _movePointer);
                 
         string json = JsonSerializer.Serialize(gameState, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(GameRecordFileName, json);
@@ -349,20 +354,20 @@ public abstract class GameBoard
 
     protected virtual void ShowResult()
     {
-        if (_winnerId == NoWinnerFlag)
+        if (winnerId == NoWinnerFlag)
         {
             Console.WriteLine("Game over! Draw!");
         }
         else
         {
-            BasePlayer winner = _players[_winnerId];
+            BasePlayer winner = _players[winnerId];
             if (_mode == PlayWithComputerMode && winner.IsHumanPlayer())
             {
                 Console.WriteLine("Congratulations! You win!");
             }
             else if(_mode == PlayWithPlayerMode)
             {
-                Console.WriteLine("Congratulations! Player {0} win!", _winnerId + 1);
+                Console.WriteLine("Congratulations! Player {0} win!", winnerId + 1);
             }
             else
             {
@@ -410,7 +415,7 @@ public abstract class GameBoard
             _moveHistory.RemoveRange(_movePointer + 1, _moveHistory.Count - _movePointer - 1);
         }
         
-        _moveHistory.Add(new Move { Row = row, Col = col, Value = value, PlayerIndex = _currentPlayerIndex});
+        _moveHistory.Add(new Move { Row = row, Col = col, Value = value, PlayerIndex = currentPlayerIndex});
         _movePointer++;
     }
 
@@ -425,19 +430,19 @@ public abstract class GameBoard
         else
         {
             // save current player
-            int tmp = _currentPlayerIndex;
+            int tmp = currentPlayerIndex;
             
             // undo all the moves in the previous round(all players)
             for(int i = 0; i < PlayerCount; i++)
             {
                 var move = _moveHistory[_movePointer];
-                _currentPlayerIndex = move.PlayerIndex;
+                currentPlayerIndex = move.PlayerIndex;
                 Place(move.Row, move.Col, NotPlacedFlag);
                 _movePointer--;
             }
 
             // restore current user 
-            _currentPlayerIndex = tmp;
+            currentPlayerIndex = tmp;
         }
     }
 
