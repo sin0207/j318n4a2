@@ -7,7 +7,6 @@ public abstract class GameBoard
     // constants for player mode
     private const int PlayWithPlayerMode = 1;
     private const int PlayWithComputerMode = 2;
-    private const int AutoMode = 3;
     
     // constants for gaming option
     private const int StartNewGameOption = 1;
@@ -156,10 +155,6 @@ public abstract class GameBoard
             // player 2 will be human player only when human vs human
             _players[1] = InitializeHumanPlayer(boardSize, 2);
         }
-        else if (_mode == AutoMode)
-        {
-            _players[1] = InitializeComputerPlayer(boardSize, 2);
-        }
         else
         {
             // player 2 could be computer or human player based on the mode and player 1's type
@@ -175,9 +170,8 @@ public abstract class GameBoard
             Console.WriteLine("Gaming modes: ");
             Console.WriteLine("{0}. Human vs Human", PlayWithPlayerMode);
             Console.WriteLine("{0}. Human vs Computer", PlayWithComputerMode);
-            Console.WriteLine("{0}. Computer vs Computer", AutoMode);
             Console.Write("Please choose one of the gaming modes: ");
-            if (int.TryParse(Console.ReadLine(), out mode) && (mode == PlayWithPlayerMode || mode == PlayWithComputerMode || mode == AutoMode))
+            if (int.TryParse(Console.ReadLine(), out mode) && (mode == PlayWithPlayerMode || mode == PlayWithComputerMode))
             {
                 break;
             }
@@ -503,7 +497,7 @@ public abstract class GameBoard
             Console.Write(i.ToString().PadLeft(maxRowNumberWidth) + " |");
             for (int j = colStart; j <= colEnd; j++)
             {
-                string output = Board[i, j] == NotPlacedFlag ? "." : Board[i, j].ToString();
+                string output = Board[i, j] == NotPlacedFlag ? " " : Board[i, j].ToString();
                 Console.Write(CenterText(output, maxColumnWidth) + "|"); // Padding for equal space width
             }
 
