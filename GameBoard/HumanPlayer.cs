@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-
+using Notakto;
 namespace GameBoard;
 
 public abstract class HumanPlayer : BasePlayer
@@ -35,6 +35,12 @@ public abstract class HumanPlayer : BasePlayer
 
                 string colLetters = match.Groups[1].Value.ToUpper();
                 row = int.Parse(match.Groups[2].Value);
+
+                if (gameBoard is NotaktoBoard notaktoBoard && notaktoBoard.IsBoardDead(row))
+                {
+                    Console.WriteLine("The board you want to place is dead and removed. Choose another.");
+                    continue;
+                }
 
                 col = 0;
                 foreach (char c in colLetters)
