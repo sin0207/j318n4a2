@@ -13,7 +13,7 @@ public class NotaktoBoard : GameBoard.GameBoard
     // Board Settings
     private const int BoardSize = 3;
     private const int BoardCount = 3;
-    private bool[]? BoardHasLine;
+    private bool[]? _boardHasLine;
 
     static NotaktoBoard()
     {
@@ -24,14 +24,15 @@ public class NotaktoBoard : GameBoard.GameBoard
     {
         ColSize = BoardSize;
         RowSize = BoardSize * BoardCount;
-        BoardHasLine = new bool[BoardCount];
-        InitializeBoard();
+        _boardHasLine = new bool[BoardCount];
+        base.SetupGameBoard();
     }
 
     protected override void DisplayBoard(string subject) {
         for (int i = 0; i < BoardCount; i++)
         {
-            WriteLine("Board {0}", i + 1);
+            string status = _boardHasLine[i] ? "[Dead]" : "";
+            WriteLine("Board {0}{1}", i + 1, status);
             int rowStart = (i * BoardSize) + 1;
             int rowEnd = rowStart + BoardSize - 1;
             PrintBoard(rowStart, 1, rowEnd, BoardSize);
@@ -41,7 +42,7 @@ public class NotaktoBoard : GameBoard.GameBoard
     public bool IsBoardDead(int row)
     {
         int boardIndex = (row - 1) / BoardSize;
-        return BoardHasLine[boardIndex];
+        return _boardHasLine[boardIndex];
     }
 
     public void SetTempMove(int row, int col, object? value)
@@ -51,16 +52,15 @@ public class NotaktoBoard : GameBoard.GameBoard
 
     public bool CauseLineDetect(int row, int col, object symbol)
     {
-        int boardSize = 3;
-        int boardIndex = (row - 1) / boardSize;
-        int rowStart = boardIndex * boardSize + 1;
-        int rowEnd = rowStart + boardSize - 1;
+        int boardIndex = (row - 1) / BoardSize;
+        int rowStart = boardIndex * BoardSize + 1;
+        int rowEnd = rowStart + BoardSize - 1;
 
         // row checking
         bool rowWin = true;
-        for (int i = 1; i <= boardSize; i++)
+        for (int i = 1; i <= BoardSize; i++)
         {
-            if (Board[row, i]?.ToString() != symbol)
+            if (Board[row, i]?.ToString() != symbol.ToString())
             {
                 rowWin = false;
                 break;
@@ -71,7 +71,7 @@ public class NotaktoBoard : GameBoard.GameBoard
         bool colWin = true;
         for (int i = rowStart; i <= rowEnd; i++)
         {
-            if (Board[i, col]?.ToString() != symbol)
+            if (Board[i, col]?.ToString() != symbol.ToString())
             {
                 colWin = false;
                 break;
@@ -82,9 +82,9 @@ public class NotaktoBoard : GameBoard.GameBoard
         bool diag1Win = true;
         if ((row - rowStart) == (col - 1))
         {
-            for (int i = 0; i < boardSize; i++)
+            for (int i = 0; i < BoardSize; i++)
             {
-                if (Board[rowStart + i, i + 1]?.ToString() != symbol)
+                if (Board[rowStart + i, i + 1]?.ToString() != symbol.ToString())
                 {
                     diag1Win = false;
                     break;
@@ -95,11 +95,11 @@ public class NotaktoBoard : GameBoard.GameBoard
 
         // diagonal (top-right to bottom-left) /
         bool diag2Win = true;
-        if ((row - rowStart) == (boardSize - col))
+        if ((row - rowStart) == (BoardSize - col))
         {
-            for (int i = 0; i < boardSize; i++)
+            for (int i = 0; i < BoardSize; i++)
             {
-                if (Board[rowStart + i, boardSize - i]?.ToString() != symbol)
+                if (Board[rowStart + i, BoardSize - i]?.ToString() != symbol.ToString())
                 {
                     diag2Win = false;
                     break;
@@ -108,178 +108,36 @@ public class NotaktoBoard : GameBoard.GameBoard
         }
         else diag2Win = false;
 
-        return false;
+        return rowWin || colWin || diag1Win || diag2Win;
     }
 
     public override bool CheckWin(int row, int col, object? value = null)
     {
-        int boardSize = 3;
-        int boardIndex = (row - 1) / boardSize;
-        int rowStart = boardIndex * boardSize + 1;
-        int rowEnd = rowStart + boardSize - 1;
-
+        int boardIndex = (row - 1) / BoardSize;
         string symbol = value?.ToString() ?? "X";
 
-        // row checking
-        bool rowWin = true;
-        for (int i = 1; i <= boardSize; i++)
-        {
-            if (Board[row, i]?.ToString() != symbol)
-            {
-                rowWin = false;
-                break;
-            }
-        }
-
-        // col checking
-        bool colWin = true;
-        for (int i = rowStart; i <= rowEnd; i++)
-        {
-            if (Board[i, col]?.ToString() != symbol)
-            {
-                colWin = false;
-                break;
-            }
-        }
-
-        // diagonal (top-left to bottom-right) \
-        bool diag1Win = true;
-        if ((row - rowStart) == (col - 1))
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                if (Board[rowStart + i, i + 1]?.ToString() != symbol)
-                {
-                    diag1Win = false;
-                    break;
-                }
-            }
-        }
-        else diag1Win = false;
-
-        // diagonal (top-right to bottom-left) /
-        bool diag2Win = true;
-        if ((row - rowStart) == (boardSize - col))
-        {
-            for (int i = 0; i < boardSize; i++)
-            {
-                if (Board[rowStart + i, boardSize - i]?.ToString() != symbol)
-                {
-                    diag2Win = false;
-                    break;
-                }
-            }
-        }
-        else diag2Win = false;
-
-        bool win = rowWin || colWin || diag1Win || diag2Win;
-        if (win)
-        {
-            BoardHasLine[boardIndex] = true;
-        }
+        _boardHasLine[boardIndex] = CauseLineDetect(row, col, symbol);
 
         return false;
     }
 
-    public void RecheckBoardHasLineStatus()
+    protected override bool IsGameCompleted(bool isPlayerWin)
     {
-        int boardSize = 3;
-        for (int boardIndex = 0; boardIndex < 3; boardIndex++)
+        bool isGameCompleted = _boardHasLine.All(b => b);
+
+        if (isGameCompleted)
         {
-            int rowStart = boardIndex * boardSize + 1;
-            int rowEnd = rowStart + boardSize - 1;
-
-            bool hasLine = false;
-
-            // check rows
-            for (int r = rowStart; r <= rowEnd && !hasLine; r++)
-            {
-                bool rowFull = true;
-                for (int c = 1; c <= boardSize; c++)
-                {
-                    if (Board[r, c]?.ToString() != "X")
-                    {
-                        rowFull = false;
-                        break;
-                    }
-                }
-                if (rowFull) hasLine = true;
-            }
-
-            // check columns
-            for (int c = 1; c <= boardSize && !hasLine; c++)
-            {
-                bool colFull = true;
-                for (int i = 0; i < boardSize; i++)
-                {
-                    if (Board[rowStart + i, c]?.ToString() != "X")
-                    {
-                        colFull = false;
-                        break;
-                    }
-                }
-                if (colFull) hasLine = true;
-            }
-
-            // check diagonal \
-            if (!hasLine)
-            {
-                bool diag1 = true;
-                for (int i = 0; i < boardSize; i++)
-                {
-                    if (Board[rowStart + i, i + 1]?.ToString() != "X")
-                    {
-                        diag1 = false;
-                        break;
-                    }
-                }
-                if (diag1) hasLine = true;
-            }
-
-            // check diagonal /
-            if (!hasLine)
-            {
-                bool diag2 = true;
-                for (int i = 0; i < boardSize; i++)
-                {
-                    if (Board[rowStart + i, boardSize - i]?.ToString() != "X")
-                    {
-                        diag2 = false;
-                        break;
-                    }
-                }
-                if (diag2) hasLine = true;
-            }
-            BoardHasLine[boardIndex] = hasLine;
+            // the last player who made the line losed
+            winnerId = (currentPlayerIndex == 0) ? 1 : 0;   
         }
-    }
-    protected override void RefreshGameStatus(int row, int col, object? value)
-    {
-        base.RefreshGameStatus(row, col, value);
-        RecheckBoardHasLineStatus();
-
-        // check if all boards are completed
-        if (BoardHasLine.All(b => b))
-        {
-            // trying to set _isGameOver = true on GameBoard's private variable
-            typeof(GameBoard.GameBoard)
-                .GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(this, true);
-        }
+        
+        return isGameCompleted;
     }
 
     protected override void ShowResult()
     {
-        var moveHistory = typeof(GameBoard.GameBoard)
-            .GetField("_moveHistory", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(this) as List<Move>;
-
-        int loserIndex = moveHistory?.Last().PlayerIndex ?? 0;
-        int winnerIndex = (loserIndex == 0) ? 1 : 0;
-
         WriteLine("All boards are complete!");
-        WriteLine("Player {0} loses the game.", loserIndex + 1);
-        WriteLine("Player {0} wins!", winnerIndex + 1);
+        base.ShowResult();
     }
 
     public override void DisplayHelpMenu()

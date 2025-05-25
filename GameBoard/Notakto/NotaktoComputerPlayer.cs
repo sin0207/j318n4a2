@@ -55,5 +55,5 @@ public class NotaktoComputerPlayer : ComputerPlayer
     throw new Exception("No valid move found.");
   }
 
-  protected override object GetValueForNextMove() => 'X';
+  protected override object GetValueForNextMove() => "X";
 }
